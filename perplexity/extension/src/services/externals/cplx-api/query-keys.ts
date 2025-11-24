@@ -53,15 +53,6 @@ export const cplxApiQueries = {
       }),
   },
 
-  cacheBuster: {
-    all: () => [...cplxApiQueries.all(), "cacheBuster"] as const,
-    detail: () =>
-      queryOptions({
-        queryKey: [...cplxApiQueries.cacheBuster.all()] as const,
-        queryFn: () => CplxApiService.fetchSoftCacheBuster(),
-      }),
-  },
-
   psa: {
     all: () => [...cplxApiQueries.all(), "psa"] as const,
     detail: () =>
@@ -73,10 +64,10 @@ export const cplxApiQueries = {
 
   cometPatchTutorial: {
     all: () => [...cplxApiQueries.all(), "cometPatchTutorial"] as const,
-    detail: () =>
+    detail: (params: { platform?: "mac" | "win" } = {}) =>
       queryOptions({
-        queryKey: [...cplxApiQueries.cometPatchTutorial.all()] as const,
-        queryFn: () => CplxApiService.fetchCometPatchTutorial(),
+        queryKey: [...cplxApiQueries.cometPatchTutorial.all(), params] as const,
+        queryFn: () => CplxApiService.fetchCometPatchTutorial(params),
       }),
   },
 };

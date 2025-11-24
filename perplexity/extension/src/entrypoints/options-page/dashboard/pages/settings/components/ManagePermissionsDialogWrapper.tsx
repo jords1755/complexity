@@ -1,3 +1,5 @@
+import { useQueryClient } from "@tanstack/react-query";
+
 import {
   Dialog,
   DialogContent,
@@ -12,6 +14,7 @@ import {
   OPTIONAL_PERMISSIONS,
   OPTIONAL_PERMISSIONS_DETAILS,
 } from "@/services/infra/extension-api-wrappers/extension-permissions/permissions";
+import { extensionPermissionsQueries } from "@/services/infra/extension-api-wrappers/extension-permissions/query-keys";
 import { useExtensionPermissions } from "@/services/infra/extension-api-wrappers/extension-permissions/useExtensionPermissions";
 import useExtensionSettings from "@/services/infra/extension-api-wrappers/extension-settings/useExtensionSettings";
 
@@ -20,11 +23,10 @@ export default function ManagePermissionsDialogWrapper({
 }: {
   children: React.ReactNode;
 }) {
-  const {
-    data: grantedPermissions,
-    handleGrantPermission,
-    handleRevokePermission,
-  } = useExtensionPermissions();
+  const queryClient = useQueryClient();
+
+  const { data: grantedPermissions, handleRevokePermission } =
+    useExtensionPermissions();
 
   const { pluginsStates } = usePluginsStates();
   const { settings } = useExtensionSettings();
@@ -43,22 +45,22 @@ export default function ManagePermissionsDialogWrapper({
             Grant or revoke extension permissions. Please note that some
             features may be disabled without the necessary permissions.
           </DialogDescription>
+          {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
           {OPTIONAL_PERMISSIONS.length > 0 ? (
             OPTIONAL_PERMISSIONS.map((permission) => {
               const activePlugins = OPTIONAL_PERMISSIONS_DETAILS[
                 permission
               ]?.dependantPlugins.filter(
                 (plugin) =>
-                  (!pluginsStates[plugin.id]?.isOnMaintenance &&
-                    !pluginsStates[plugin.id]?.isOutdated &&
-                    settings?.plugins[plugin.id]?.enabled) ??
-                  false,
+                  !pluginsStates[plugin.id].isOnMaintenance &&
+                  !pluginsStates[plugin.id].isOutdated &&
+                  settings.plugins[plugin.id].enabled,
               );
 
               return (
                 <div
                   key={permission}
-                  className="x:!mt-4 x:flex x:flex-col x:gap-2"
+                  className="x:mt-4! x:flex x:flex-col x:gap-2"
                 >
                   <Switch
                     textLabel={
@@ -71,7 +73,7 @@ export default function ManagePermissionsDialogWrapper({
                     checked={grantedPermissions.permissions?.includes(
                       permission,
                     )}
-                    onCheckedChange={() => {
+                    onCheckedChange={async () => {
                       if (
                         grantedPermissions.permissions?.includes(permission)
                       ) {
@@ -79,9 +81,17 @@ export default function ManagePermissionsDialogWrapper({
                           permissions: [permission],
                         });
                       } else {
-                        void handleGrantPermission({
-                          permissions: [permission],
-                        });
+                        try {
+                          await chrome.permissions.request({
+                            permissions: [permission],
+                          });
+                          void queryClient.invalidateQueries({
+                            queryKey:
+                              extensionPermissionsQueries.permissions.all(),
+                          });
+                        } catch (error) {
+                          alert(`Error granting permissions: ${error}`);
+                        }
                       }
                     }}
                   />

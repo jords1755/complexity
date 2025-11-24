@@ -1,6 +1,5 @@
 import { createListCollection } from "@ark-ui/react";
 
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -17,9 +16,7 @@ import useExtensionSettings from "@/services/infra/extension-api-wrappers/extens
 export default function ExtensionIconActionSelect() {
   const { settings, mutation } = useExtensionSettings();
 
-  if (!settings) return null;
-
-  const selectedValue = settings?.extensionIconAction;
+  const selectedValue = settings.extensionIconAction;
 
   return (
     <Select
@@ -37,10 +34,8 @@ export default function ExtensionIconActionSelect() {
         });
       }}
     >
-      <SelectTrigger>
-        <Button asChild className="x:p-0">
-          <span>{OPTIONS_LABEL[selectedValue]}</span>
-        </Button>
+      <SelectTrigger className="x:px-4 x:py-3">
+        {OPTIONS_LABEL[selectedValue]}
       </SelectTrigger>
       <SelectContent>
         {OPTIONS.map((option) => (

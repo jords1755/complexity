@@ -8,9 +8,7 @@ export const ExtensionSettingsSchema = z.object({
   plugins:
     PluginManifestsRegistry.settingsZodSchema as unknown as z.ZodType<PluginsSettingsRegistry>,
   theme: z.string(),
-  energySavingMode: z.boolean(),
   extensionIconAction: z.enum(EXTENSION_ICON_ACTIONS),
-  showPostUpdateReleaseNotesPopup: z.boolean(),
   isPostUpdateReleaseNotesPopupDismissed: z.boolean(),
   devMode: z.boolean(),
   devTools: z

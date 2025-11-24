@@ -1,14 +1,14 @@
 import { PluginManifestsRegistry } from "@/__registries__/plugins";
 import type {
-  PluginTagValues,
-  PluginCategory,
-} from "@/data/dashboard/plugin-tags";
+  PluginTagKeys,
+  PluginCategoryKey,
+} from "@/data/dashboard/plugin-meta/types";
 
 type UseFilteredPluginsParams = {
   searchTerm: string;
-  selectedTags: PluginTagValues[];
-  excludeTags: PluginTagValues[];
-  categories: PluginCategory[];
+  selectedTags: PluginTagKeys[];
+  excludeTags: PluginTagKeys[];
+  categories: PluginCategoryKey[];
 };
 
 export function useFilteredPlugins({
@@ -17,40 +17,35 @@ export function useFilteredPlugins({
   excludeTags,
   categories,
 }: UseFilteredPluginsParams) {
-  const filteredPlugins = useMemo(() => {
-    return Object.values(PluginManifestsRegistry.meta)
-      .filter((plugin) => {
-        const matchesSearch = (plugin.title + plugin.description)
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-        const hasTags =
-          plugin.dashboardMeta.tags !== undefined &&
-          plugin.dashboardMeta.tags.length > 0;
+  "use memo";
 
-        const matchesTags =
-          selectedTags.length === 0 ||
-          (hasTags &&
-            selectedTags.every((tag) =>
-              plugin.dashboardMeta.tags!.includes(tag),
-            ));
+  return Object.values(PluginManifestsRegistry.meta)
+    .filter((plugin) => {
+      const matchesSearch = (plugin.title + plugin.description)
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const hasTags = plugin.dashboardMeta.tags.length > 0;
 
-        const hasExcludedTags =
-          hasTags &&
-          excludeTags.some((tag) => plugin.dashboardMeta.tags!.includes(tag));
+      const matchesTags =
+        selectedTags.length === 0 ||
+        (hasTags &&
+          selectedTags.every((tag) =>
+            plugin.dashboardMeta.tags!.includes(tag),
+          ));
 
-        const matchesCategories =
-          categories.length === 0 ||
-          (plugin.dashboardMeta.categories !== undefined &&
-            plugin.dashboardMeta.categories.some((category) =>
-              categories.includes(category),
-            ));
+      const hasExcludedTags =
+        hasTags &&
+        excludeTags.some((tag) => plugin.dashboardMeta.tags!.includes(tag));
 
-        return (
-          matchesSearch && matchesTags && !hasExcludedTags && matchesCategories
+      const matchesCategories =
+        categories.length === 0 ||
+        plugin.dashboardMeta.categories.some((category) =>
+          categories.includes(category),
         );
-      })
-      .map((plugin) => plugin.id);
-  }, [excludeTags, searchTerm, selectedTags, categories]);
 
-  return filteredPlugins;
+      return (
+        matchesSearch && matchesTags && !hasExcludedTags && matchesCategories
+      );
+    })
+    .map((plugin) => plugin.id);
 }

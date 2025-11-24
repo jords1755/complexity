@@ -2,20 +2,20 @@ import { cva } from "class-variance-authority";
 
 import Tooltip from "@/components/Tooltip";
 import { Badge } from "@/components/ui/badge";
-import { PLUGIN_TAGS } from "@/data/dashboard/plugin-tags";
-import type { PluginTagValues } from "@/data/dashboard/plugin-tags";
+import PluginMeta from "@/data/dashboard/plugin-meta";
+import type { PluginTagKeys } from "@/data/dashboard/plugin-meta/types";
 
 type PluginTagProps = {
-  tag: PluginTagValues;
+  tag: PluginTagKeys;
 };
 
 const variantOptions = {
-  experimental:
-    "x:bg-destructive x:text-destructive-foreground x:hover:bg-destructive/80",
+  experimental: "x:bg-caution x:text-caution-foreground x:hover:bg-caution/80",
   new: "x:bg-primary x:text-primary-foreground x:hover:bg-primary/80",
   deprecated:
     "x:bg-orange-500 x:text-orange-500-foreground x:hover:bg-orange-500/80",
-} as const satisfies Partial<Record<PluginTagValues, string>>;
+  updated: "x:bg-success/70 x:text-primary-foreground x:hover:bg-success/50",
+} as const satisfies Partial<Record<PluginTagKeys, string>>;
 
 type VariantType = keyof typeof variantOptions;
 
@@ -29,21 +29,23 @@ const tagVariants = cva("x:border x:border-border/50 x:hover:bg-background", {
 });
 
 const isColoredVariant = (
-  tag: PluginTagValues,
-): tag is Extract<PluginTagValues, VariantType> => {
+  tag: PluginTagKeys,
+): tag is Extract<PluginTagKeys, VariantType> => {
   return tag in variantOptions;
 };
 
 export function PluginTag({ tag }: PluginTagProps) {
+  if (PluginMeta.tags[tag] == null) return null;
+
   return (
-    <Tooltip content={PLUGIN_TAGS[tag].description}>
+    <Tooltip content={PluginMeta.tags[tag].description}>
       <Badge
         variant="secondary"
         className={tagVariants({
           variant: isColoredVariant(tag) ? tag : "default",
         })}
       >
-        {PLUGIN_TAGS[tag].label.toLocaleUpperCase()}
+        {PluginMeta.tags[tag].label.toLocaleUpperCase()}
       </Badge>
     </Tooltip>
   );

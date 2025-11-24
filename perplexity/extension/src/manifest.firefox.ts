@@ -1,5 +1,5 @@
 import { baseManifest, type ManifestV3Options } from "./manifest.base";
-import { produce } from "immer";
+import { create } from "mutative";
 
 export type MozManifest = ManifestV3Options & {
   browser_specific_settings: {
@@ -7,14 +7,20 @@ export type MozManifest = ManifestV3Options & {
       id: string;
       strict_min_version: string;
     };
+    gecko_android: {
+      strict_min_version: string;
+    };
   };
 };
 
-const mozManifest = produce(baseManifest as MozManifest, (draft) => {
+const mozManifest = create(baseManifest as MozManifest, (draft) => {
   draft.browser_specific_settings = {
     gecko: {
       id: "complexity@ngocdg",
       strict_min_version: "109.0",
+    },
+    gecko_android: {
+      strict_min_version: "120.0",
     },
   };
   draft.background = {

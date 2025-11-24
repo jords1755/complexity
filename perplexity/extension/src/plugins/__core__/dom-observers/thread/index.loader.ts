@@ -1,16 +1,14 @@
 import { AsyncLoaderRegistry } from "@/plugins/__async-deps__/async-loaders";
 import { spaRouteChangeCompleteSubscribe } from "@/plugins/__core__/_main-world/spa-router/utils";
+import { domObserverService } from "@/plugins/__core__/dom-observers";
 import {
   observeNavbarOverflowMenuButtonWrapper,
   observeNavbar,
   observeWrapper,
-  observePageWrapper,
   observeMessageBlocksWrapper,
 } from "@/plugins/__core__/dom-observers/thread/observers";
 import { threadDomObserverStore } from "@/plugins/__core__/dom-observers/thread/store";
-import { DomSelectorsService } from "@/plugins/__core__/dom-selectors/service-init.loader";
-import { domObserverService } from "@/services/features/dom-observer";
-import { createDomObserverId } from "@/services/features/dom-observer/types";
+import { createDomObserverId } from "@/plugins/__core__/dom-observers/types";
 import { whereAmI } from "@/utils/misc/utils";
 
 declare module "@/plugins/__async-deps__/async-loaders" {
@@ -46,7 +44,6 @@ export default function () {
 }
 
 function cleanup() {
-  domObserverService.unsubscribe(createDomObserverId("thread", "pageWrapper"));
   domObserverService.unsubscribe(createDomObserverId("thread", "navbar"));
   domObserverService.unsubscribe(
     createDomObserverId("thread", "navbarOverflowMenuButton"),
@@ -61,10 +58,6 @@ function observeThread(location: ReturnType<typeof whereAmI>) {
   cleanup();
 
   if (location === "thread") {
-    observePageWrapper({
-      observerId: createDomObserverId("thread", "pageWrapper"),
-    });
-
     observeNavbar({
       observerId: createDomObserverId("thread", "navbar"),
     });
@@ -81,10 +74,6 @@ function observeThread(location: ReturnType<typeof whereAmI>) {
       observerId: createDomObserverId("thread", "messageBlocksWrapper"),
     });
   } else if (location === "comet_assistant") {
-    observePageWrapper({
-      observerId: createDomObserverId("thread", "pageWrapper"),
-    });
-
     observeWrapper({
       observerId: createDomObserverId("thread", "wrapper"),
     });
@@ -94,11 +83,5 @@ function observeThread(location: ReturnType<typeof whereAmI>) {
     });
   } else {
     threadDomObserverStore.getState().resetStore();
-
-    $(
-      DomSelectorsService.Root.cplxAttribute(
-        DomSelectorsService.Root.internalAttributes.THREAD.PAGE_WRAPPER,
-      ),
-    ).internalComponentAttr(null);
   }
 }

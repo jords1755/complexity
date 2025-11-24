@@ -2,6 +2,7 @@ import { useInfiniteQuery, useQueries, useQuery } from "@tanstack/react-query";
 import semver from "semver";
 
 import { APP_CONFIG } from "@/app.config";
+import { persistentQueryClient } from "@/entrypoints/options-page/persistent-query-client";
 import { cplxApiQueries } from "@/services/externals/cplx-api/query-keys";
 
 export function useVersionPagination() {
@@ -9,12 +10,11 @@ export function useVersionPagination() {
     cplxApiQueries.changelog.listing.detail(),
   );
 
-  const availableVersions = useMemo(() => {
-    if (!changelogListing) return [];
-    return Object.keys(changelogListing).filter((version) =>
-      semver.lte(version, APP_CONFIG.VERSION),
-    );
-  }, [changelogListing]);
+  const availableVersions = changelogListing
+    ? Object.keys(changelogListing).filter((version) =>
+        semver.lte(version, APP_CONFIG.VERSION),
+      )
+    : [];
 
   const { data, fetchNextPage, hasNextPage } = useInfiniteQuery({
     queryKey: ["versionPagination", changelogListing],
@@ -33,21 +33,23 @@ export function useVersionPagination() {
     enabled: availableVersions.length > 0,
   });
 
-  const loadedVersions = useMemo(() => {
-    return data?.pages.flat() || [];
-  }, [data?.pages]);
+  const loadedVersions = data?.pages.flat() || [];
 
   const changelogQueries = useQueries({
     queries: loadedVersions.map((version) => ({
       ...cplxApiQueries.changelog.detail({ version }),
-      staleTime: 1000 * 60 * 60,
+      staleTime: ms("1h"),
     })),
   });
+
+  useEffect(() => {
+    void persistentQueryClient.persistQueryClient();
+  }, [changelogQueries]);
 
   return {
     loadedVersions,
     hasMore: !!hasNextPage,
-    loadNextVersions: () => fetchNextPage(),
+    loadNextVersions: fetchNextPage,
     changelogQueries,
   };
 }

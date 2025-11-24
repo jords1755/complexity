@@ -39,6 +39,8 @@ export default {
   },
   spaces: {
     footer: {
+      copyId: "Kopiraj ID",
+      copyIdSuccess: "✅ ID kopiran u međuspremnik",
       openInNewTab: "Otvori u novoj kartici",
       searchInSpace: "Pretraži u prostoru",
       goToSpace: "Idi u prostor",
@@ -88,5 +90,6 @@ export default {
   common: {
     noResults: "Nema rezultata",
     current: "Trenutno",
+    expires: "Ističe {date}",
   },
 } as const satisfies Translations;

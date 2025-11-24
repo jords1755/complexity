@@ -1,4 +1,5 @@
 import { AsyncLoaderRegistry } from "@/plugins/__async-deps__/async-loaders";
+import { persistentQueryClient } from "@/plugins/__async-deps__/persistent-query-client";
 import {
   betterSidebarNormalizeCollapsedCssResourceConfig,
   betterSidebarNormalizeExpandedCssResourceConfig,
@@ -7,7 +8,6 @@ import { getVersionedRemoteResource } from "@/services/externals/cplx-api/versio
 import { InstantCssService } from "@/services/features/instant-css";
 import { ExtensionSettingsService } from "@/services/infra/extension-api-wrappers/extension-settings";
 import { sendMessage } from "@/types/chrome-runtime-message";
-import { getCookie } from "@/utils/dom-utils/generics";
 
 declare module "@/plugins/__async-deps__/async-loaders" {
   interface AsyncLoadersRegistry {
@@ -44,15 +44,21 @@ export async function applyLayoutShiftPreventionInstantCss({
   const [normalizeCollapsedCss, normalizeExpandedCss] = await Promise.all([
     getVersionedRemoteResource(
       betterSidebarNormalizeCollapsedCssResourceConfig,
+      persistentQueryClient,
     ),
-    getVersionedRemoteResource(betterSidebarNormalizeExpandedCssResourceConfig),
+    getVersionedRemoteResource(
+      betterSidebarNormalizeExpandedCssResourceConfig,
+      persistentQueryClient,
+    ),
   ]);
 
   const tabId = await sendMessage("getTabId");
 
   if (!tabId) return;
 
-  const state = getCookie("isSidebarPinned");
+  const state = localStorage.getItem(
+    "pplx.local-user-settings.isSidebarPinned",
+  );
 
   const action = enabled
     ? InstantCssService.registerInstantCss

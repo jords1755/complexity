@@ -1,24 +1,24 @@
-import type { ZodSchema } from "zod";
+import type z from "zod";
 
 import { APP_CONFIG } from "@/app.config";
 import {
   ChangelogListingSchema,
   type ChangelogListing,
-  type ICplxApiService,
 } from "@/services/externals/cplx-api/types";
 import {
   fetchResourceWithSchema,
   getUrl,
 } from "@/services/externals/cplx-api/utils";
 import { fetchTextResource } from "@/utils/misc/utils";
-export class CplxApiOnlineService implements ICplxApiService {
-  async fetchChangelog({ version }: { version?: string } = {}) {
+export const CplxApiOnlineService = {
+  fetchChangelog: async ({
+    version,
+  }: { version?: string } = {}): Promise<string> => {
     const targetVersion = version ?? APP_CONFIG.VERSION;
 
     const resp = await fetch(
       getUrl({
         path: `/changelogs/${targetVersion}.md`,
-        passiveCacheBusterInterval: 1000 * 60 * 30,
       }).toString(),
     );
 
@@ -29,9 +29,9 @@ export class CplxApiOnlineService implements ICplxApiService {
     }
 
     return resp.text();
-  }
+  },
 
-  async fetchChangelogListing(): Promise<ChangelogListing> {
+  fetchChangelogListing: async (): Promise<ChangelogListing> => {
     return ChangelogListingSchema.parse(
       JSON.parse(
         await fetchTextResource(
@@ -41,57 +41,64 @@ export class CplxApiOnlineService implements ICplxApiService {
         ),
       ),
     );
-  }
+  },
 
-  async fetchRemoteResource<T>({
+  fetchRemoteResource: async <T>({
     resourcePath,
     zodSchema,
   }: {
     resourcePath: string;
-    zodSchema: ZodSchema<T>;
-  }): Promise<T> {
+    zodSchema: z.ZodType<T>;
+  }): Promise<T> => {
     return fetchResourceWithSchema({
       resourcePath,
       zodSchema,
       pathPrefix: "/resources",
     });
-  }
+  },
 
-  async fetchVersionedRemoteResource<T>({
+  fetchVersionedRemoteResource: async <T>({
     resourcePath,
     zodSchema,
   }: {
     resourcePath: string;
-    zodSchema: ZodSchema<T>;
-  }): Promise<T> {
+    zodSchema: z.ZodType<T>;
+  }): Promise<T> => {
     return fetchResourceWithSchema({
       resourcePath,
       zodSchema,
       pathPrefix: "/versioned-resources",
     });
-  }
+  },
 
-  async fetchSoftCacheBuster() {
+  fetchQueryCacheBuster: async (): Promise<string> => {
     return fetchTextResource(
       getUrl({
         path: "/cache-buster",
+        passiveCacheBusterInterval: APP_CONFIG.IS_DEV ? undefined : ms("1m"),
       }).toString(),
     );
-  }
+  },
 
-  async fetchPsa() {
+  fetchPsa: async (): Promise<string> => {
     return fetchTextResource(
       getUrl({
         path: "/assets/psa.md",
       }).toString(),
     );
-  }
+  },
 
-  async fetchCometPatchTutorial() {
+  fetchCometPatchTutorial: async ({
+    platform,
+  }: {
+    platform?: "mac" | "win";
+  }): Promise<string> => {
     return fetchTextResource(
       getUrl({
-        path: "/assets/comet-patch-tutorial.md",
+        path: platform
+          ? `/assets/comet-patch-tutorial-${platform}.md`
+          : "/assets/comet-patch-tutorial.md",
       }).toString(),
     );
-  }
-}
+  },
+};

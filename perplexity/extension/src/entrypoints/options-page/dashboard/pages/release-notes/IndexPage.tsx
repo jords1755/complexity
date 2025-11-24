@@ -4,7 +4,6 @@ import ChangelogRenderer from "@/components/changelog/ChangelogRenderer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useVersionPagination } from "@/entrypoints/options-page/dashboard/pages/release-notes/hooks/useVersionPagination";
 import { cplxApiQueries } from "@/services/externals/cplx-api/query-keys";
-import { PPLX_SCROLLBAR_CLASSES } from "@/utils/dom-utils/pplx-scrollbar-classes";
 
 import TablerLoaderCircle from "~icons/tabler/loader-2";
 
@@ -16,26 +15,24 @@ export function IndexPage() {
     cplxApiQueries.changelog.listing.detail(),
   );
 
-  const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (hasMore && loadMoreRef.current) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          if (entries[0]?.isIntersecting) {
-            void loadNextVersions();
-          }
-        },
-        { threshold: 0.1 },
-      );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          void loadNextVersions();
+        }
+      },
+      { threshold: 0.1 },
+    );
 
-      observerRef.current = observer;
+    if (loadMoreRef.current) {
       observer.observe(loadMoreRef.current);
-
-      return () => observer.disconnect();
     }
-  }, [hasMore, loadNextVersions]);
+
+    return () => observer.disconnect();
+  }, [hasMore, loadNextVersions, loadedVersions]);
 
   return (
     <div className="x:flex x:flex-col x:gap-8">
@@ -46,12 +43,7 @@ export function IndexPage() {
         </p>
       </div>
 
-      <div
-        className={cn(
-          "x:relative x:max-w-screen-xl x:pb-8",
-          PPLX_SCROLLBAR_CLASSES,
-        )}
-      >
+      <div className={cn("x:relative x:max-w-7xl x:pb-8")}>
         {loadedVersions.map((version, index) => {
           const changelogQuery = changelogQueries[index];
           const isLoading = changelogQuery?.isLoading;
@@ -102,7 +94,7 @@ export function IndexPage() {
         {hasMore && (
           <div
             ref={loadMoreRef}
-            className="x:relative x:flex x:justify-center x:py-4"
+            className="x:relative x:mx-auto x:flex x:w-fit x:justify-center x:py-4"
           >
             <div className="x:absolute x:top-4 x:left-2 x:z-10 x:flex x:items-center x:justify-center x:rounded-full x:bg-background">
               <TablerLoaderCircle className="x:animate-spin x:text-muted-foreground" />

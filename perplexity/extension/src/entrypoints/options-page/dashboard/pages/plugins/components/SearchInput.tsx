@@ -1,4 +1,4 @@
-import { useCallback, useTransition } from "react";
+import { useTransition } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import { Input } from "@/components/ui/input";
@@ -12,17 +12,14 @@ export default function SearchInput() {
   const { filters, setFilters } = usePluginFilters();
   const [, startTransition] = useTransition();
 
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      startTransition(() => {
-        setFilters({
-          ...filters,
-          searchTerm: e.target.value,
-        });
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    startTransition(() => {
+      setFilters({
+        ...filters,
+        searchTerm: e.target.value,
       });
-    },
-    [filters, setFilters],
-  );
+    });
+  };
 
   useHotkeys(
     keysToString([getPlatform() === "mac" ? Key.Meta : Key.Control, "e"]),

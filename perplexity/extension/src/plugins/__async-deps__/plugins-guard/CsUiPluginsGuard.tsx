@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 
 import { PluginManifestsRegistry } from "@/__registries__/plugins";
 import { APP_CONFIG } from "@/app.config";
@@ -49,18 +49,14 @@ function CsUiPluginsGuardError({
   errorMessage,
   customMessage,
 }: Omit<CsUiPluginsGuardProps, "children"> & { errorMessage?: string }) {
-  const componentKey = useMemo(
-    () =>
-      errorDialogManager.generateComponentKey({
-        dependentPluginIds,
-        location,
-        customMessage,
-        errorMessage,
-      }),
-    [dependentPluginIds, location, customMessage, errorMessage],
-  );
+  const componentKey = errorDialogManager.generateComponentKey({
+    dependentPluginIds,
+    location,
+    customMessage,
+    errorMessage,
+  });
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean | null>(null);
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -71,16 +67,14 @@ function CsUiPluginsGuardError({
   );
 
   useEffect(() => {
-    if (shouldShowDialog) {
-      setOpen(true);
-    }
     return () => {
       errorDialogManager.unregisterCallback(componentKey, handleClose);
     };
-  }, [componentKey, shouldShowDialog, handleClose]);
+  }, [componentKey, handleClose]);
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
+      setOpen(false);
       errorDialogManager.clearError(componentKey);
     } else {
       setOpen(true);
@@ -102,7 +96,7 @@ function CsUiPluginsGuardError({
   return (
     <Dialog
       closeOnInteractOutside={false}
-      open={open}
+      open={open ?? shouldShowDialog}
       onOpenChange={({ open: newOpen }: { open: boolean }) =>
         handleOpenChange(newOpen)
       }
@@ -112,7 +106,7 @@ function CsUiPluginsGuardError({
           <DialogTitle>Complexity encountered an error</DialogTitle>
           <DialogDescription>
             {dependentPluginIds?.length != null &&
-              dependentPluginIds?.length > 0 &&
+              dependentPluginIds.length > 0 &&
               pluginsError}
             {traces}
           </DialogDescription>
@@ -180,15 +174,7 @@ export default function CsUiPluginsGuard(
 ): React.ReactNode | null {
   const [retryCount, setRetryCount] = useState(0);
   const [error, setError] = useState<Error | null>(null);
-  const [key, setKey] = useState(0);
   const errorRef = useRef<Error | null>(null);
-
-  useEffect(() => {
-    setRetryCount(0);
-    setError(null);
-    setKey(0);
-    errorRef.current = null;
-  }, [props.children]);
 
   useEffect(() => {
     if (errorRef.current && retryCount < 3) {
@@ -197,8 +183,7 @@ export default function CsUiPluginsGuard(
       if (
         currentError.message.includes(
           "Failed to fetch dynamically imported module",
-        ) &&
-        chrome.runtime.id == null
+        )
       ) {
         return;
       }
@@ -206,8 +191,6 @@ export default function CsUiPluginsGuard(
       console.error(
         `[CPLX] Plugin error, retry attempt ${retryCount + 1}/3: ${currentError.message}`,
       );
-
-      setKey((prevKey) => prevKey + 1);
 
       errorRef.current = null;
     }
@@ -262,7 +245,7 @@ export default function CsUiPluginsGuard(
 
   return (
     <ErrorBoundary
-      key={key}
+      key={retryCount}
       fallback={({ error: boundaryError }: { error: Error }) => {
         if (!errorRef.current) {
           errorRef.current = boundaryError;
@@ -271,8 +254,7 @@ export default function CsUiPluginsGuard(
         if (
           boundaryError.message.includes(
             "Failed to fetch dynamically imported module",
-          ) &&
-          chrome.runtime.id == null
+          )
         ) {
           return null;
         }
@@ -291,6 +273,8 @@ export default function CsUiPluginsGuard(
     </ErrorBoundary>
   );
 }
+
+CsUiPluginsGuard.displayName = "CsUiPluginsGuard";
 
 function RenderError({
   boundaryError,
@@ -371,7 +355,7 @@ function usePluginsError(
       <Ul>
         {dependentPluginIds.map((pluginId) => (
           <li key={pluginId} className="x:text-foreground">
-            {PluginManifestsRegistry.meta[pluginId]?.title || pluginId}
+            {PluginManifestsRegistry.meta[pluginId].title || pluginId}
           </li>
         ))}
       </Ul>

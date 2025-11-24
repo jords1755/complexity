@@ -1,5 +1,6 @@
 import { AsyncLoaderRegistry } from "@/plugins/__async-deps__/async-loaders";
 import { spaRouteChangeCompleteSubscribe } from "@/plugins/__core__/_main-world/spa-router/utils";
+import { domObserverService } from "@/plugins/__core__/dom-observers";
 import {
   observeCometAssistantQueryBox,
   observeFollowUpQueryBox,
@@ -7,8 +8,7 @@ import {
   observeSpaceQueryBox,
 } from "@/plugins/__core__/dom-observers/query-boxes/observers";
 import { queryBoxesDomObserverStore } from "@/plugins/__core__/dom-observers/query-boxes/store";
-import { domObserverService } from "@/services/features/dom-observer";
-import { createDomObserverId } from "@/services/features/dom-observer/types";
+import { createDomObserverId } from "@/plugins/__core__/dom-observers/types";
 import { whereAmI } from "@/utils/misc/utils";
 
 declare module "@/plugins/__async-deps__/async-loaders" {
@@ -57,27 +57,29 @@ function cleanup() {
 function observeQueryBoxes(location: ReturnType<typeof whereAmI>) {
   cleanup();
 
-  const observerMap: Partial<
-    Record<
-      ReturnType<typeof whereAmI>,
-      ({ observerId }: { observerId: string }) => () => void
-    >
-  > = {
-    home: observeMainQueryBox,
-    comet_ntp: observeMainQueryBox,
-    collection: observeSpaceQueryBox,
-    thread: observeFollowUpQueryBox,
-    comet_assistant: observeCometAssistantQueryBox,
-  };
-
-  const handler = observerMap[location];
-
-  if (handler == null) {
-    queryBoxesDomObserverStore.getState().resetStore();
-    return;
+  switch (location) {
+    case "home":
+    case "comet_ntp":
+      observeMainQueryBox({
+        observerId: createDomObserverId("queryBoxes", location),
+      });
+      break;
+    case "collection":
+      observeSpaceQueryBox({
+        observerId: createDomObserverId("queryBoxes", location),
+      });
+      break;
+    case "thread":
+      observeFollowUpQueryBox({
+        observerId: createDomObserverId("queryBoxes", location),
+      });
+      break;
+    case "comet_assistant":
+      observeCometAssistantQueryBox({
+        observerId: createDomObserverId("queryBoxes", location),
+      });
+      break;
+    default:
+      queryBoxesDomObserverStore.getState().resetStore();
   }
-
-  handler({
-    observerId: createDomObserverId("queryBoxes", location),
-  });
 }

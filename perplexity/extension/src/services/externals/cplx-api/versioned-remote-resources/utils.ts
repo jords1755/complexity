@@ -4,32 +4,30 @@ import { APP_CONFIG } from "@/app.config";
 import { cplxApiQueries } from "@/services/externals/cplx-api/query-keys";
 import { VersionedRemoteResourceListingSchema } from "@/services/externals/cplx-api/versioned-remote-resources/types";
 import type { VersionedRemoteResource } from "@/services/externals/cplx-api/versioned-remote-resources/types";
-import { queryClient } from "@/services/infra/query-client";
-import { persistQueryClient } from "@/services/infra/query-client/utils";
-import { errorWrapper } from "@/utils/wrappers/error-wrapper";
+import type PersistentQueryClient from "@/services/infra/query-client";
 
 export async function getVersionedRemoteResource<T>(
   resourceConfig: VersionedRemoteResource<T>,
+  persistentQueryClient: PersistentQueryClient,
 ): Promise<T> {
-  if (APP_CONFIG.IS_DEV) return resourceConfig.fallback;
+  if (APP_CONFIG.IS_DEV || APP_CONFIG.CPLX_CDN_URL == null)
+    return resourceConfig.fallback;
 
-  if (APP_CONFIG.CPLX_CDN_URL == null) return resourceConfig.fallback;
-
-  const entry = await getResourceEntry(resourceConfig);
+  const entry = await getResourceEntry(resourceConfig, persistentQueryClient);
 
   if (entry == null) return resourceConfig.fallback;
 
-  const [resource, error] = await errorWrapper(() =>
-    queryClient.fetchQuery({
+  const [resource, error] = await tryCatch(() =>
+    persistentQueryClient.queryClient.fetchQuery({
       ...cplxApiQueries.versionedRemoteResource.detail({
         resourcePath: `${resourceConfig.name}/${entry}`,
         zodSchema: resourceConfig.zodSchema,
       }),
       retry: false,
     }),
-  )();
+  );
 
-  void persistQueryClient({ queryClient });
+  void persistentQueryClient.persistQueryClient();
 
   if (error) return resourceConfig.fallback;
 
@@ -38,16 +36,17 @@ export async function getVersionedRemoteResource<T>(
 
 async function getResourceEntry<T>(
   resourceConfig: VersionedRemoteResource<T>,
+  persistentQueryClient: PersistentQueryClient,
 ): Promise<string | null> {
-  const [listing, error] = await errorWrapper(
+  const [listing, error] = await tryCatch(
     async () =>
-      await queryClient.fetchQuery(
+      await persistentQueryClient.queryClient.fetchQuery(
         cplxApiQueries.versionedRemoteResource.detail({
           resourcePath: "listing.json",
           zodSchema: VersionedRemoteResourceListingSchema,
         }),
       ),
-  )();
+  );
 
   if (error) return null;
 

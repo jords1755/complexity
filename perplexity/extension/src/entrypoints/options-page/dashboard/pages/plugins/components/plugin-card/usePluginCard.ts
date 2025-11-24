@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { PluginSettingsUis } from "@/__registries__/plugin-settings-uis";
 import { PluginManifestsRegistry } from "@/__registries__/plugins";
@@ -10,7 +10,8 @@ import useExtensionSettings from "@/services/infra/extension-api-wrappers/extens
 
 export function usePluginCard(pluginId: PluginId) {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const { search } = useLocation();
+
   const { settings, mutation } = useExtensionSettings();
 
   const { data: permissions, isLoading: isPermissionsLoading } =
@@ -23,7 +24,7 @@ export function usePluginCard(pluginId: PluginId) {
     extensionPermissions,
   } = PluginManifestsRegistry.meta[pluginId];
 
-  const hasAllRequiredPermissions = useMemo(() => {
+  const hasAllRequiredPermissions = (() => {
     const grantedPermissions = permissions?.permissions ?? [];
 
     const requiredPermissions = extensionPermissions?.requiredPermissions;
@@ -36,13 +37,13 @@ export function usePluginCard(pluginId: PluginId) {
         requiredPermissions: [permission],
       }),
     );
-  }, [permissions, extensionPermissions]);
+  })();
 
-  const dialogContent = useMemo(() => PluginSettingsUis[pluginId], [pluginId]);
+  const dialogContent = PluginSettingsUis[pluginId];
 
   const { pluginsStates, isLoading } = usePluginsStates();
 
-  const areAllDependentPluginsEnabled = useMemo(() => {
+  const areAllDependentPluginsEnabled = (() => {
     const allDependencies =
       PluginManifestsRegistry.getAllPluginDependencies(pluginId);
 
@@ -50,31 +51,21 @@ export function usePluginCard(pluginId: PluginId) {
 
     return Array.from(allDependencies).every(
       (dependentPluginId) =>
-        settings?.plugins[dependentPluginId].enabled &&
+        settings.plugins[dependentPluginId].enabled &&
         !pluginsStates[dependentPluginId].isOnMaintenance &&
         !pluginsStates[dependentPluginId].isOutdated,
     );
-  }, [pluginId, settings, pluginsStates]);
+  })();
 
-  const navigateToPluginDetails = useCallback(() => {
-    void navigate(
-      `/plugins/${uiRouteSegment}?${new URLSearchParams(searchParams)}`,
-      {
-        state: {
-          fromPluginList: true,
-        },
-      },
-    );
-  }, [navigate, searchParams, uiRouteSegment]);
+  const navigateToPluginDetails = () => {
+    void navigate(`/plugins/${uiRouteSegment}${search}`);
+  };
 
-  const togglePlugin = useCallback(
-    ({ checked }: { checked: boolean }) => {
-      mutation.mutate((draft) => {
-        draft.plugins[pluginId].enabled = checked;
-      });
-    },
-    [mutation, pluginId],
-  );
+  const togglePlugin = ({ checked }: { checked: boolean }) => {
+    mutation.mutate((draft) => {
+      draft.plugins[pluginId].enabled = checked;
+    });
+  };
 
   return {
     pluginInfo: {

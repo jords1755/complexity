@@ -1,14 +1,15 @@
+import { persistentQueryClient } from "@/plugins/__async-deps__/persistent-query-client";
 import { DomObserversMainWorldActions } from "@/plugins/__core__/dom-observers/_main-world";
 import type { MessageBlockFiberData } from "@/plugins/__core__/dom-observers/_main-world/actions/thread-messages";
 import { threadMessageBlocksFiberConfigResourceConfig } from "@/plugins/__core__/dom-observers/thread/message-blocks/remote-resources/index.remote-resources";
 import { threadMessageBlocksDomObserverStore } from "@/plugins/__core__/dom-observers/thread/message-blocks/store";
 import type { MessageBlock } from "@/plugins/__core__/dom-observers/thread/message-blocks/types";
 import { DomSelectorsService } from "@/plugins/__core__/dom-selectors/service-init.loader";
-import { type DomSelectorsService as DomSelectorsServiceType } from "@/services/externals/cplx-api/versioned-remote-resources/dom-selectors";
 import { getVersionedRemoteResource } from "@/services/externals/cplx-api/versioned-remote-resources/utils";
 
 const remoteFiberConfig = await getVersionedRemoteResource(
   threadMessageBlocksFiberConfigResourceConfig,
+  persistentQueryClient,
 );
 
 export async function findMessageBlocks(
@@ -34,7 +35,7 @@ export async function findMessageBlocks(
   for (let index = 0; index < nodes.length; index += 1) {
     result.push(
       parseMessageBlock({
-        messageBlockFiber: messageBlocksFiberData?.[index],
+        messageBlockFiberData: messageBlocksFiberData?.[index],
         $wrapper: $(nodes[index] as HTMLElement),
         index,
       }),
@@ -45,11 +46,11 @@ export async function findMessageBlocks(
 }
 
 function parseMessageBlock({
-  messageBlockFiber,
+  messageBlockFiberData,
   $wrapper,
   index,
 }: {
-  messageBlockFiber: MessageBlockFiberData | undefined;
+  messageBlockFiberData: MessageBlockFiberData | undefined;
   $wrapper: JQuery<HTMLElement>;
   index: number;
 }): MessageBlock {
@@ -59,36 +60,43 @@ function parseMessageBlock({
     )
     .attr("data-index", index);
 
-  const { $query, $queryEditButtonGroup, $sources, $answer, $footer } =
-    getComponentNodes({ $wrapper, index });
+  const {
+    $query,
+    $queryEditButtonGroup,
+    $contentWrapper,
+    $answer,
+    $footer,
+    $displayModelButton,
+  } = getComponentNodes({ $wrapper, index });
 
   const nodes: MessageBlock["nodes"] = {
     $wrapper,
     $query,
-    $sources,
+    $contentWrapper,
     $answer,
     $queryEditButtonGroup,
     $footer,
+    $displayModelButton,
   };
 
   const content: MessageBlock["content"] = {
     title:
-      messageBlockFiber?.title ??
+      messageBlockFiberData?.title ??
       $query
         .find(DomSelectorsService.Root.cachedSync.THREAD.MESSAGE.QUERY)
         .text(),
-    answer: messageBlockFiber?.answer ?? "",
-    webResults: messageBlockFiber?.webResults ?? [],
-    displayModel: messageBlockFiber?.displayModel ?? "",
-    backendUuid: messageBlockFiber?.backendUuid ?? "",
-    authorUuid: messageBlockFiber?.authorUuid ?? "",
+    answer: messageBlockFiberData?.answer ?? "",
+    webResults: messageBlockFiberData?.webResults ?? [],
+    displayModel: messageBlockFiberData?.displayModel ?? "",
+    backendUuid: messageBlockFiberData?.backendUuid ?? "",
+    userSelectedModel: messageBlockFiberData?.userSelectedModel ?? null,
+    authorUuid: messageBlockFiberData?.authorUuid ?? "",
   };
 
-  const isVirtualized = $answer.length === 0;
+  const isVirtualized = $query.length === 0;
   const states = getMessageBlockStates({
     messageBlockNodes: nodes,
-    messageBlockFiber,
-    isVirtualized,
+    messageBlockFiberData,
   });
 
   return {
@@ -108,21 +116,17 @@ function getComponentNodes({
   $wrapper: JQuery<Element>;
   index: number;
 }) {
-  const SELECTORS = DomSelectorsService.Root.cachedSync.THREAD.MESSAGE;
-  const existingNodes = getExistingNodes(index);
+  const existingNodes =
+    threadMessageBlocksDomObserverStore.getState().messageBlocks?.[index]
+      ?.nodes;
 
   const nodes = existingNodes
-    ? refreshStaleNodes(existingNodes, $wrapper, SELECTORS)
-    : findFreshNodes($wrapper, SELECTORS);
+    ? refreshStaleNodes(existingNodes, $wrapper)
+    : findFreshNodes($wrapper as JQuery<HTMLElement>);
 
   setInternalAttributes(nodes);
 
   return nodes;
-}
-
-function getExistingNodes(index: number) {
-  return threadMessageBlocksDomObserverStore.getState().messageBlocks?.[index]
-    ?.nodes;
 }
 
 function isNodeStale($node: JQuery<Element>): boolean {
@@ -132,16 +136,16 @@ function isNodeStale($node: JQuery<Element>): boolean {
 function refreshStaleNodes(
   existingNodes: MessageBlock["nodes"],
   $wrapper: JQuery<Element>,
-  SELECTORS: DomSelectorsServiceType["cachedSync"]["THREAD"]["MESSAGE"],
 ) {
+  const SELECTORS = DomSelectorsService.Root.cachedSync.THREAD.MESSAGE;
   const nodes = { ...existingNodes };
 
   if (isNodeStale(nodes.$query)) {
     nodes.$query = $wrapper.find(SELECTORS.QUERY_WRAPPER);
   }
 
-  if (isNodeStale(nodes.$sources)) {
-    nodes.$sources = $wrapper.find(SELECTORS.SOURCES);
+  if (isNodeStale(nodes.$contentWrapper)) {
+    nodes.$contentWrapper = $wrapper.find(SELECTORS.CONTENT_WRAPPER);
   }
 
   if (isNodeStale(nodes.$answer)) {
@@ -158,35 +162,45 @@ function refreshStaleNodes(
     );
   }
 
+  if (isNodeStale(nodes.$displayModelButton)) {
+    nodes.$displayModelButton = nodes.$footer.find(
+      SELECTORS.FOOTER_CHILD.DISPLAY_MODEL_BUTTON,
+    );
+  }
+
   return nodes;
 }
 
-function findFreshNodes(
-  $wrapper: JQuery<Element>,
-  SELECTORS: DomSelectorsServiceType["cachedSync"]["THREAD"]["MESSAGE"],
-): MessageBlock["nodes"] {
+function findFreshNodes($wrapper: JQuery<HTMLElement>): MessageBlock["nodes"] {
+  const SELECTORS = DomSelectorsService.Root.cachedSync.THREAD.MESSAGE;
+
   const $elements = $wrapper.find(
     [
       SELECTORS.QUERY_WRAPPER,
-      SELECTORS.SOURCES,
+      SELECTORS.CONTENT_WRAPPER,
       SELECTORS.ANSWER,
       SELECTORS.FOOTER,
     ].join(", "),
   );
 
   const $query = $elements.filter(SELECTORS.QUERY_WRAPPER);
-  const $sources = $elements.filter(SELECTORS.SOURCES);
   const $answer = $elements.filter(SELECTORS.ANSWER);
   const $footer = $elements.filter(SELECTORS.FOOTER);
+  const $contentWrapper = $elements.filter(SELECTORS.CONTENT_WRAPPER);
+
   const $queryEditButtonGroup = $query.find(SELECTORS.QUERY_EDIT_BUTTON_GROUP);
+  const $displayModelButton = $footer.find(
+    SELECTORS.FOOTER_CHILD.DISPLAY_MODEL_BUTTON,
+  );
 
   return {
-    $wrapper: $wrapper as JQuery<HTMLElement>,
+    $wrapper,
     $query,
-    $sources,
+    $contentWrapper,
     $answer,
     $footer,
     $queryEditButtonGroup,
+    $displayModelButton,
   };
 }
 
@@ -204,18 +218,14 @@ function setInternalAttributes(nodes: MessageBlock["nodes"]) {
 
 function getMessageBlockStates({
   messageBlockNodes,
-  messageBlockFiber,
-  isVirtualized,
+  messageBlockFiberData,
 }: {
   messageBlockNodes: MessageBlock["nodes"];
-  messageBlockFiber: MessageBlockFiberData | undefined;
-  isVirtualized: boolean;
+  messageBlockFiberData: MessageBlockFiberData | undefined;
 }): Omit<MessageBlock["states"], "isVirtualized"> {
   const { $wrapper, $query, $footer } = messageBlockNodes;
 
-  const isInFlight = isVirtualized
-    ? false
-    : (messageBlockFiber?.isInFlight ?? $footer[0] == null);
+  const isInFlight = messageBlockFiberData?.isInFlight ?? $footer[0] == null;
 
   $wrapper.attr("data-inflight", isInFlight ? "true" : "false");
 

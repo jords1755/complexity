@@ -1,6 +1,7 @@
+import { useStore } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { immer } from "zustand/middleware/immer";
 import { createWithEqualityFn } from "zustand/traditional";
+import { mutative } from "zustand-mutative";
 
 import useThreadCodeBlock from "@/plugins/__core__/dom-observers/thread/code-blocks/hooks/useThreadCodeBlock";
 
@@ -33,7 +34,7 @@ type InitialState = Omit<
 export const createStore = (initialState: InitialState) =>
   createWithEqualityFn<MirroredCodeBlockStore>()(
     subscribeWithSelector(
-      immer(
+      mutative(
         (set): MirroredCodeBlockStore => ({
           ...initialState,
           setIsWrapped: (isWrapped) => {
@@ -70,39 +71,39 @@ const MirroredCodeBlockContext = createContext<MirroredCodeBlockContext | null>(
   null,
 );
 
-export const MirroredCodeBlockContextProvider = memo(
-  function MirroredCodeBlockContextProvider({
-    storeValue,
-    children,
-  }: {
-    storeValue: InitialState;
-    children: React.ReactNode;
-  }) {
-    const [store] = useState(() => createStore(storeValue));
+export function MirroredCodeBlockContextProvider({
+  storeValue,
+  children,
+}: {
+  storeValue: InitialState;
+  children: React.ReactNode;
+}) {
+  const [store] = useState(() => createStore(storeValue));
 
-    return (
-      <MirroredCodeBlockContext value={store}>
-        {children}
-      </MirroredCodeBlockContext>
-    );
-  },
-);
+  return (
+    <MirroredCodeBlockContext value={store}>
+      {children}
+    </MirroredCodeBlockContext>
+  );
+}
 
 export function useMirroredCodeBlockContext() {
   const context = use(MirroredCodeBlockContext);
-  if (!context) {
-    throw new Error(
-      "useMirroredCodeBlockContext must be used within a MirroredCodeBlockContext",
-    );
-  }
 
-  const contextValues = context();
+  invariant(
+    context != null,
+    "useMirroredCodeBlockContext must be used within a MirroredCodeBlockContext",
+  );
+
+  const store = useStore(context);
+
+  const codeBlock = useThreadCodeBlock({
+    messageBlockIndex: store.sourceMessageBlockIndex,
+    codeBlockIndex: store.sourceCodeBlockIndex,
+  });
 
   return {
-    codeBlock: useThreadCodeBlock({
-      messageBlockIndex: contextValues.sourceMessageBlockIndex,
-      codeBlockIndex: contextValues.sourceCodeBlockIndex,
-    }),
-    ...contextValues,
+    codeBlock,
+    ...store,
   };
 }

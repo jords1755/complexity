@@ -54,9 +54,9 @@ const presets = [
     value: "all",
     label: (
       <PresetLabel
-        label="YOLO"
+        label="Editor's Picks"
         LabelIcon={TablerRocket}
-        description="Enabling all plugins without understanding their functionality is not recommended. It's suggested to explore them individually first."
+        description="Enabling multiple plugins without understanding their functionality is not recommended. It's suggested to explore them individually."
       />
     ),
     config: ALL_PLUGINS,
@@ -87,19 +87,15 @@ export default function PluginsEnableSet() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { settings, mutation } = useExtensionSettings();
-  const isDefaultSettings = useMemo(
-    () =>
-      isEqual(
-        settings?.plugins,
-        PluginManifestsRegistry.settingsFallbackValues,
-      ),
-    [settings],
+  const isDefaultSettings = isEqual(
+    settings.plugins,
+    PluginManifestsRegistry.settingsFallbackValues,
   );
   const [open, setOpen] = useState(
     searchParams.get("from") === "onboarding" && isDefaultSettings,
   );
   const [selectedPreset, setSelectedPreset] = useState<string>("essentials");
-  const applyPreset = useCallback(() => {
+  const applyPreset = () => {
     const preset = presets.find((p) => p.value === selectedPreset);
     if (!preset) return;
 
@@ -112,7 +108,7 @@ export default function PluginsEnableSet() {
     });
 
     setOpen(false);
-  }, [mutation, selectedPreset]);
+  };
 
   return (
     <Dialog
@@ -163,7 +159,7 @@ export default function PluginsEnableSet() {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline" onClick={() => navigate("/")}>
+            <Button onClick={() => navigate("/")}>
               I&apos;ll look around by myself
             </Button>
           </DialogClose>

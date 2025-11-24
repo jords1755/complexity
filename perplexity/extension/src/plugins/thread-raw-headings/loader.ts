@@ -1,4 +1,5 @@
 import { AsyncLoaderRegistry } from "@/plugins/__async-deps__/async-loaders";
+import { persistentQueryClient } from "@/plugins/__async-deps__/persistent-query-client";
 import { spaRouteChangeCompleteSubscribe } from "@/plugins/__core__/_main-world/spa-router/utils";
 import { threadRawHeadingsCssResourceConfig } from "@/plugins/thread-raw-headings/index.remote-resources";
 import { getVersionedRemoteResource } from "@/services/externals/cplx-api/versioned-remote-resources/utils";
@@ -11,7 +12,7 @@ declare module "@/plugins/__async-deps__/async-loaders" {
   }
 }
 
-let cleanup: () => void | null;
+let cleanup: (() => void) | null;
 
 export default function () {
   AsyncLoaderRegistry.register({
@@ -35,7 +36,10 @@ async function rawHeadings(location: ReturnType<typeof whereAmI>) {
   if (location !== "thread") return;
 
   const removeCss = insertCss({
-    css: await getVersionedRemoteResource(threadRawHeadingsCssResourceConfig),
+    css: await getVersionedRemoteResource(
+      threadRawHeadingsCssResourceConfig,
+      persistentQueryClient,
+    ),
     id: "raw-headings",
   });
 

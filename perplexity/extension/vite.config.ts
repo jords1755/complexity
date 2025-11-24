@@ -9,7 +9,7 @@ import Unimport from "unimport/unplugin";
 import chromeManifest from "./src/manifest.chrome";
 import firefoxManifest from "./src/manifest.firefox";
 import { APP_CONFIG } from "./src/app.config";
-import unimportConfig from "./src/types/unimport.config";
+import unimportConfig from "./src/auto-imports-config";
 import tailwindcss from "@tailwindcss/vite";
 import Icons from "unplugin-icons/vite";
 
@@ -43,7 +43,11 @@ export default defineConfig(() => ({
         APP_CONFIG.BROWSER === "chrome" ? chromeManifest : firefoxManifest,
       browser: APP_CONFIG.BROWSER,
     }),
-    react(),
+    react({
+      babel: {
+        plugins: ["babel-plugin-react-compiler"],
+      },
+    }),
     tailwindcss(),
     vitePluginTailwindCustomPrefixes(),
     Unimport.vite(unimportConfig),
@@ -95,6 +99,13 @@ export default defineConfig(() => ({
     //   host: "localhost",
     //   protocol: "ws",
     // },
+    watch: {
+      ignored: (filePath) => {
+        const normalizedPath = filePath.replace(/\\/g, "/");
+        const srcPath = path.resolve(__dirname, "src").replace(/\\/g, "/");
+        return !normalizedPath.startsWith(srcPath);
+      },
+    },
     warmup: {
       clientFiles: [
         "src/entrypoints/content-scripts/index.ts",

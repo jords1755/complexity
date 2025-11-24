@@ -42,14 +42,11 @@ export default function () {
           internalSearchStatesObserverStore.setState((store) => {
             store.sources = states.sources;
 
-            if (
-              states.selectedModel != null &&
-              isLanguageModelCode(states.selectedModel)
-            ) {
-              store.selectedModel = states.selectedModel;
+            if (states.model != null && isLanguageModelCode(states.model)) {
+              store.model = states.model;
             }
 
-            if (states.searchMode != null && isSearchMode(states.searchMode)) {
+            if (isSearchMode(states.searchMode)) {
               store.searchMode = states.searchMode;
             }
           });

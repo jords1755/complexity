@@ -1,12 +1,11 @@
+import { APP_CONFIG } from "@/app.config";
 import FiberSearchService from "@/plugins/__core__/_main-world/fiber-search";
 import { DomSelectorsService } from "@/plugins/__core__/dom-selectors/service-init.loader";
 import { DomSelectorsServiceImpl } from "@/services/externals/cplx-api/versioned-remote-resources/dom-selectors";
-import { errorWrapper } from "@/utils/wrappers/error-wrapper";
 import { walkFiberNode } from "@/utils/wrappers/react-fiber";
 
 export async function triggerRewriteOption(params: {
   messageBlockIndex: number;
-  optionIndex?: number;
   fiberConfig: {
     name: string;
     dataNodePath: string[];
@@ -14,7 +13,7 @@ export async function triggerRewriteOption(params: {
 }): Promise<boolean> {
   const domSelectors = await DomSelectorsService.Proxy.getCache();
 
-  const { messageBlockIndex, optionIndex } = params;
+  const { messageBlockIndex } = params;
 
   const selector = `${DomSelectorsServiceImpl.cplxAttribute(
     DomSelectorsServiceImpl.internalAttributes.THREAD.MESSAGE.BLOCK,
@@ -31,15 +30,22 @@ export async function triggerRewriteOption(params: {
       exact: true,
       maxDepth: 100,
       cache: false,
+      traverseDirection: "up",
     },
   );
 
-  if (fiberNode == null) return false;
+  if (fiberNode == null) {
+    if (APP_CONFIG.IS_DEV) {
+      console.error("❌ [TriggerRewriteOption] No fiber node found");
+    }
 
-  const [triggerRewriteOptionHandler] = errorWrapper<() => void>(() => {
-    const node = walkFiberNode(fiberNode, params.fiberConfig.dataNodePath);
-    return node[optionIndex ?? node.length - 1].onClick;
-  })();
+    return false;
+  }
+
+  const [triggerRewriteOptionHandler] = tryCatch(
+    () =>
+      walkFiberNode(fiberNode, params.fiberConfig.dataNodePath) as () => void,
+  );
 
   if (triggerRewriteOptionHandler == null) return false;
 

@@ -20,15 +20,6 @@ export const pluginId: PluginId = "promptHistory";
 
 export default function PromptHistoryPluginSettingsUi() {
   const { settings, mutation } = useExtensionSettings();
-  const pluginSettings = settings?.plugins["promptHistory"];
-
-  const handleEnableChange = (checked: boolean) => {
-    mutation.mutate((draft) => {
-      draft.plugins["promptHistory"].enabled = checked;
-    });
-  };
-
-  if (!settings) return null;
 
   return (
     <div className="x:flex x:max-w-lg x:flex-col x:gap-4">
@@ -38,11 +29,15 @@ export default function PromptHistoryPluginSettingsUi() {
       </p>
       <Switch
         textLabel="Enable"
-        checked={pluginSettings?.enabled ?? false}
-        onCheckedChange={({ checked }) => handleEnableChange(checked)}
+        checked={settings.plugins["promptHistory"].enabled}
+        onCheckedChange={({ checked }) => {
+          mutation.mutate((draft) => {
+            draft.plugins["promptHistory"].enabled = checked;
+          });
+        }}
       />
 
-      {pluginSettings?.enabled && (
+      {settings.plugins["promptHistory"].enabled && (
         <div className="x:ml-8 x:flex x:flex-col x:gap-2">
           <SlashCommandMenuActivationShortcutsSettings />
 
@@ -56,7 +51,7 @@ export default function PromptHistoryPluginSettingsUi() {
                 </div>
               </div>
             }
-            checked={pluginSettings?.trigger.onSubmit ?? false}
+            checked={settings.plugins["promptHistory"].trigger.onSubmit}
             onCheckedChange={({ checked }) => {
               mutation.mutate((draft) => {
                 draft.plugins["promptHistory"].trigger.onSubmit = checked;
@@ -74,7 +69,7 @@ export default function PromptHistoryPluginSettingsUi() {
                 </div>
               </div>
             }
-            checked={pluginSettings?.trigger.onNavigation ?? false}
+            checked={settings.plugins["promptHistory"].trigger.onNavigation}
             onCheckedChange={({ checked }) => {
               mutation.mutate((draft) => {
                 draft.plugins["promptHistory"].trigger.onNavigation = checked;
@@ -83,6 +78,7 @@ export default function PromptHistoryPluginSettingsUi() {
           />
         </div>
       )}
+
       <div className="x:mx-auto x:w-full x:max-w-[700px]">
         <Image
           src="https://i.imgur.com/3miAzlF.png"
@@ -97,19 +93,13 @@ export default function PromptHistoryPluginSettingsUi() {
 function SlashCommandMenuActivationShortcutsSettings() {
   const { settings, mutation } = useExtensionSettings();
 
-  const shortcutType = settings?.plugins["promptHistory"]?.shortcut?.type;
-  const shortcutValue = settings?.plugins["promptHistory"]?.shortcut?.value;
-  const shortcutTypeItems = useMemo(
-    () => [
-      { id: "keybinding", title: "Keyboard Shortcut" },
-      { id: "command", title: "Text Command" },
-    ],
-    [],
-  );
-  const defaultKeys = useMemo(
-    () => (Array.isArray(shortcutValue) ? shortcutValue : []),
-    [shortcutValue],
-  );
+  const shortcutType = settings.plugins["promptHistory"].shortcut.type;
+  const shortcutValue = settings.plugins["promptHistory"].shortcut.value;
+  const shortcutTypeItems = [
+    { id: "keybinding", title: "Keyboard Shortcut" },
+    { id: "command", title: "Text Command" },
+  ];
+  const defaultKeys = Array.isArray(shortcutValue) ? shortcutValue : [];
   const { HotkeyRecorderUi } = useHotkeyRecorder({
     defaultKeys,
     onSave: (keys) => {
@@ -129,7 +119,7 @@ function SlashCommandMenuActivationShortcutsSettings() {
             itemToString: (item) => item.title,
             itemToValue: (item) => item.id,
           })}
-          value={[shortcutType ?? "keybinding"]}
+          value={[shortcutType]}
           positioning={{ sameWidth: true }}
           onValueChange={({ value }) => {
             mutation.mutate((draft) => {
@@ -156,7 +146,7 @@ function SlashCommandMenuActivationShortcutsSettings() {
           <HotkeyRecorderUi />
         ) : (
           <div className="x:flex x:w-fit x:items-center x:rounded-lg x:border x:p-0.5 x:*:font-mono x:*:tracking-widest">
-            <span className="x:ml-2">//</span>
+            <span className="x:ml-2">{`//`}</span>
             <Input
               className="x:w-full x:max-w-[300px] x:border-none x:p-0 x:text-base x:focus-visible:ring-0 x:focus-visible:ring-transparent"
               placeholder="..."

@@ -1,4 +1,4 @@
-import { produce } from "immer";
+import { create } from "mutative";
 
 import { AsyncLoaderRegistry } from "@/plugins/__async-deps__/async-loaders";
 import { pluginGuardsStore } from "@/plugins/__async-deps__/plugins-guard/store";
@@ -12,13 +12,13 @@ import { ExtensionSettingsService } from "@/services/infra/extension-api-wrapper
 
 declare module "@/plugins/__async-deps__/async-loaders" {
   interface AsyncLoadersRegistry {
-    "networkIntercept:languageModelSelector": void;
+    "plugin:queryBox:languageModelSelector:networkInterceptMiddlewares": void;
   }
 }
 
 export default function () {
   AsyncLoaderRegistry.register({
-    id: "networkIntercept:languageModelSelector",
+    id: "plugin:queryBox:languageModelSelector:networkInterceptMiddlewares",
     dependencies: ["cache:pluginsEnableStates"],
     loader: ({ "cache:pluginsEnableStates": pluginsEnableStates }) => {
       if (!pluginsEnableStates["queryBox:languageModelSelector"]) return;
@@ -58,16 +58,16 @@ export default function () {
               const settings = ExtensionSettingsService.cachedSync;
 
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const newParams = produce(parsedData.params, (draft: any) => {
+              const newParams = create(parsedData.params, (draft: any) => {
                 draft.timezone =
                   settings.devMode &&
                   settings.plugins["queryBox:languageModelSelector"]
-                    .changeTimezone
+                    .spoofTimezone
                     ? "America/Los_Angeles"
                     : parsedData.params.timezone;
 
                 if (!isRetry) {
-                  const { selectedLanguageModel } =
+                  const { model: selectedLanguageModel } =
                     betterLanguageModelSelectorStore.getState();
                   draft.model_preference = selectedLanguageModel;
                 }

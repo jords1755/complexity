@@ -5,6 +5,7 @@ import {
   isAllowedKey,
 } from "@/plugins/__core__/slash-command/store/slices/pages/utils";
 import { getAnchor } from "@/plugins/__core__/slash-command/utils";
+import { getTaskScheduler } from "@/utils/misc/utils";
 
 declare module "@/plugins/__async-deps__/async-loaders" {
   interface AsyncLoadersRegistry {
@@ -28,7 +29,7 @@ export default function () {
 
         if (!anchor) return;
 
-        requestAnimationFrame(() => {
+        getTaskScheduler()(() => {
           const wordAtCaret = anchor.contentActions?.getWordAtCaret();
 
           if (
@@ -49,8 +50,8 @@ export default function () {
 
           const store = slashCommandMenuStore.getState();
 
-          store.setBufferTextCaretPosition(wordAtCaret.start);
-          store.setBufferText(wordAtCaret.value);
+          store.anchor.setBufferTextCaretPosition(wordAtCaret.start);
+          store.anchor.setBufferText(wordAtCaret.value);
 
           anchor.contentActions?.deleteTriggerPhrase();
 
@@ -58,24 +59,25 @@ export default function () {
           store.anchor.actions.setInputField(target);
           store.anchor.actions.setPositioningOptions(anchor.positioningOptions);
           store.anchor.actions.setContentActions(anchor.contentActions);
+          store.anchor.actions.setPortalContainer(anchor.portalContainer);
 
-          store.pushPage({
+          store.pagesStack.pushPage({
             pageId,
             args: undefined,
           });
 
-          store.setOpen(true);
+          store.states.setOpen(true);
         });
       });
 
       slashCommandMenuStore.subscribe(
-        (state) => state.open,
+        (store) => store.states.open,
         (open) => {
           if (open) return;
 
-          requestAnimationFrame(() => {
+          getTaskScheduler()(() => {
             slashCommandMenuStore.getState().anchor.inputField?.focus();
-            slashCommandMenuStore.getState().restoreText();
+            slashCommandMenuStore.getState().anchor.restoreText();
           });
         },
       );

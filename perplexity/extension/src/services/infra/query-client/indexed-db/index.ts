@@ -1,9 +1,11 @@
 import { db } from "@/services/infra/indexed-db";
-import type { QueryCacheEntry } from "@/services/infra/query-client/utils";
+import type { QueryCacheEntry } from "@/services/infra/query-client/types";
 
 export const backgroundProxyServiceName = "queryCacheService";
 
 export class QueryCacheServiceImpl {
+  static isInitialized = () => true;
+
   static async add(query: QueryCacheEntry): Promise<string> {
     return await db.queryCache.add(query);
   }

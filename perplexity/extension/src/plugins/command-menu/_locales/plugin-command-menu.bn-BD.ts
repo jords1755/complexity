@@ -39,6 +39,8 @@ export default {
   },
   spaces: {
     footer: {
+      copyId: "ID অনুলিপি করুন",
+      copyIdSuccess: "✅ ID ক্লিপবোর্ডে অনুলিপি করা হয়েছে",
       openInNewTab: "নতুন ট্যাবে খুলুন",
       searchInSpace: "স্থানে অনুসন্ধান করুন",
       goToSpace: "স্থানে যান",
@@ -88,5 +90,6 @@ export default {
   common: {
     noResults: "কোন ফলাফল পাওয়া যায়নি",
     current: "বর্তমান",
+    expires: "{date} এ মেয়াদ শেষ হয়",
   },
 } as const satisfies Translations;

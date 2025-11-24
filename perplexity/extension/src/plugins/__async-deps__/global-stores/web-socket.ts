@@ -1,7 +1,7 @@
 import type { Socket } from "socket.io-client";
 import { subscribeWithSelector } from "zustand/middleware";
-import { immer } from "zustand/middleware/immer";
 import { createWithEqualityFn } from "zustand/traditional";
+import { mutative } from "zustand-mutative";
 
 type InternalWebSocketStore = {
   common: Socket | null;
@@ -10,8 +10,8 @@ type InternalWebSocketStore = {
 export const internalWebSocketStore =
   createWithEqualityFn<InternalWebSocketStore>()(
     subscribeWithSelector(
-      immer(
-        (set, get): InternalWebSocketStore => ({
+      mutative(
+        (): InternalWebSocketStore => ({
           common: null,
         }),
       ),

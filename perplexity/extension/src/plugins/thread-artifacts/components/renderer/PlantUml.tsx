@@ -18,7 +18,7 @@ import {
 
 import TablerLoaderCircle from "~icons/tabler/loader-2";
 
-const SVGContent = memo(function SVGContent({ svg }: { svg: string }) {
+function SVGContent({ svg }: { svg: string }) {
   useEffect(() => {
     const $svg = $("#artifact-plantuml-container").find("svg");
 
@@ -35,19 +35,19 @@ const SVGContent = memo(function SVGContent({ svg }: { svg: string }) {
   return (
     <div
       id="artifact-plantuml-container"
-      className="x:flex x:size-full x:items-center x:justify-center x:animate-in x:fade-in x:[&>svg]:!size-full"
+      className="x:flex x:size-full x:items-center x:justify-center x:animate-in x:fade-in x:[&>svg]:size-full!"
       dangerouslySetInnerHTML={{
         __html: svg,
       }}
     />
   );
-});
+}
 
 export default function PlantUmlRenderer() {
   const { colorScheme } = useColorSchemeStore();
 
   const selectedCodeBlockLocation = useArtifactsStore(
-    (state) => state.selectedCodeBlockLocation,
+    (store) => store.selection.selectedCodeBlockLocation,
   );
 
   const selectedCodeBlock = useThreadCodeBlock({
@@ -124,7 +124,7 @@ export default function PlantUmlRenderer() {
           </div>
           <Button
             className="x:w-max"
-            variant="destructive"
+            variant="caution"
             onClick={() => {
               if (!error.message) return;
 

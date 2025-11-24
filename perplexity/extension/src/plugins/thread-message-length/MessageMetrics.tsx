@@ -19,15 +19,17 @@ export function MessageMetrics() {
 
   const settings = ExtensionSettingsService.cachedSync;
 
-  const metrics = useMemo(() => {
-    if (!answer) return null;
-    const wordCount = answer.split(" ").length;
-    const characterCount = answer.length;
-    const tokenCount = settings.plugins["thread:showMessageLength"].showTokens
-      ? Math.ceil(characterCount / 4)
-      : null;
-    return { wordCount, characterCount, tokenCount };
-  }, [settings, answer]);
+  const metrics = answer
+    ? (() => {
+        const wordCount = answer.split(" ").length;
+        const characterCount = answer.length;
+        const tokenCount = settings.plugins["thread:showMessageLength"]
+          .showTokens
+          ? Math.ceil(characterCount / 4)
+          : null;
+        return { wordCount, characterCount, tokenCount };
+      })()
+    : null;
 
   return (
     <HoverCard
@@ -46,7 +48,7 @@ export function MessageMetrics() {
       </HoverCardTrigger>
       {metrics && (
         <HoverCardContent>
-          <div className="x:my-1 x:grid x:grid-cols-2 x:gap-x-3 x:gap-y-1">
+          <div className="x:grid x:grid-cols-2 x:gap-x-3 x:gap-y-1 x:text-sm">
             <div className="x:text-muted-foreground">
               {t("common.misc.words")}
             </div>

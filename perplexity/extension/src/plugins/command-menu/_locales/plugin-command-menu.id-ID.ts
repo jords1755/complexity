@@ -39,6 +39,8 @@ export default {
   },
   spaces: {
     footer: {
+      copyId: "Salin ID",
+      copyIdSuccess: "✅ ID disalin ke clipboard",
       openInNewTab: "Buka di tab baru",
       searchInSpace: "Cari di Ruang",
       goToSpace: "Pergi ke Ruang",
@@ -88,5 +90,6 @@ export default {
   common: {
     noResults: "Tidak ada hasil ditemukan",
     current: "Saat Ini",
+    expires: "Berakhir {date}",
   },
 } as const satisfies Translations;

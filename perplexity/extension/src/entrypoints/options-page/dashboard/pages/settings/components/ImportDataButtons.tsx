@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { storage } from "@wxt-dev/storage";
 
 import { Button } from "@/components/ui/button";
@@ -8,17 +9,24 @@ import { transfromFlatSchema } from "@/services/infra/extension-api-wrappers/ext
 import { extensionSettingsQueries } from "@/services/infra/extension-api-wrappers/extension-settings/query-keys";
 import type { ExtensionSettings } from "@/services/infra/extension-api-wrappers/extension-settings/types";
 import { db } from "@/services/infra/indexed-db";
-import { queryClient } from "@/services/infra/query-client";
-import { errorWrapper } from "@/utils/wrappers/error-wrapper";
 
 export default function ImportDataButtons() {
+  const queryClient = useQueryClient();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImportData = async (data: string) => {
-    const [, error] = await errorWrapper(async () => {
-      const parsedData = JSON.parse(data) as ExtensionData;
+    const [, error] = await tryCatch(async () => {
+      const [parsedData] = tryCatch(() => JSON.parse(data) as unknown);
 
-      if (parsedData.settings != null && "plugins" in parsedData.settings) {
+      if (
+        parsedData != null &&
+        typeof parsedData === "object" &&
+        "settings" in parsedData &&
+        parsedData.settings != null &&
+        typeof parsedData.settings === "object" &&
+        "plugins" in parsedData.settings
+      ) {
         parsedData.settings = {
           settings: transfromFlatSchema(parsedData.settings),
           settings$: {
@@ -27,13 +35,15 @@ export default function ImportDataButtons() {
         };
       }
 
+      const typedParsedData = parsedData as ExtensionData;
+
       const settings =
-        "localStorage" in parsedData
-          ? (parsedData.localStorage as {
+        "localStorage" in typedParsedData
+          ? (typedParsedData.localStorage as {
               settings: ExtensionSettings;
               settings$: { v: number };
             })
-          : parsedData.settings;
+          : typedParsedData.settings;
 
       await storage.setItem<ExtensionSettings>(
         "local:settings",
@@ -42,12 +52,12 @@ export default function ImportDataButtons() {
       await storage.setMeta("local:settings", {
         v: settings["settings$"].v,
       });
-      await db.import(parsedData.db);
+      await db.import(typedParsedData.db);
 
       void queryClient.invalidateQueries({
         queryKey: extensionSettingsQueries.all(),
       });
-    })();
+    });
 
     if (!error) {
       toast({

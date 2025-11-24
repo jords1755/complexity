@@ -1,13 +1,11 @@
-import type { ComponentProps } from "react";
+import { type ComponentProps } from "react";
 import { NavLink, useMatch } from "react-router-dom";
 
-import { APP_CONFIG } from "@/app.config";
-import SponsorDialogWrapper from "@/components/SponsorDialogWrapper";
-import CometCompatibility from "@/entrypoints/options-page/components/CometCompatibility";
 import { type NavItem } from "@/entrypoints/options-page/components/sidebar/nav-items";
 import { useOptionsPageSidebarStore } from "@/entrypoints/options-page/components/sidebar/store";
 import Version from "@/entrypoints/options-page/components/sidebar/Version";
 import SidebarUpdateAnnouncer from "@/entrypoints/options-page/components/SidebarUpdateAnnouncer";
+import SponsorDialogWrapper from "@/entrypoints/options-page/components/SponsorDialogWrapper";
 
 import TablerChevronDown from "~icons/tabler/chevron-down";
 import TablerChevronRight from "~icons/tabler/chevron-right";
@@ -40,7 +38,7 @@ const NavItemComponent = ({
             cn(
               "x:mb-1 x:flex x:flex-1 x:items-center x:rounded-xl x:p-2 x:px-4 x:text-sm x:font-medium x:transition-all x:active:scale-95",
               {
-                "x:bg-primary-foreground x:text-primary":
+                "x:bg-foreground-subtle x:text-primary":
                   isActive && isActiveEnd,
                 "x:text-muted-foreground x:hover:text-foreground": !isActive,
               },
@@ -101,10 +99,12 @@ export default function Sidebar() {
       <div className="x:sticky x:bottom-0 x:z-10 x:flex x:shrink-0 x:flex-col x:gap-4 x:bg-background x:p-4">
         <SidebarUpdateAnnouncer />
 
-        {APP_CONFIG.BROWSER === "chrome" && <CometCompatibility />}
-
         <SponsorDialogWrapper>
-          <div className="x:group x:relative x:w-full x:cursor-pointer x:rounded-xl x:border x:border-border/50 x:bg-secondary x:p-4 x:text-sm x:font-medium x:shadow-lg x:transition-all x:hover:scale-105 x:hover:border-primary x:hover:bg-primary/10 x:md:text-balance">
+          <div
+            role="button"
+            tabIndex={0}
+            className="x:group x:relative x:w-full x:cursor-pointer x:rounded-xl x:border x:border-border/50 x:bg-secondary x:p-4 x:text-sm x:text-foreground x:shadow-lg x:transition-all x:hover:scale-101 x:hover:text-foreground x:md:text-balance"
+          >
             <Trans
               tKey="common.sidebar.supporterMessage"
               components={[
@@ -114,7 +114,7 @@ export default function Sidebar() {
                 />,
               ]}
             />
-            <TablerExternalLink className="x:absolute x:top-2 x:right-2 x:size-3.5 x:text-muted x:group-hover:text-primary" />
+            <TablerExternalLink className="x:absolute x:top-2 x:right-2 x:size-3.5 x:text-muted x:transition-all x:group-hover:text-primary" />
           </div>
         </SponsorDialogWrapper>
       </div>

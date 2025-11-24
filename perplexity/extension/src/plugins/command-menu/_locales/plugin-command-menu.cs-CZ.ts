@@ -39,6 +39,8 @@ export default {
   },
   spaces: {
     footer: {
+      copyId: "Zkopírovat ID",
+      copyIdSuccess: "✅ ID zkopírováno do schránky",
       openInNewTab: "Otevřít v nové kartě",
       searchInSpace: "Hledat v prostoru",
       goToSpace: "Přejít do prostoru",
@@ -88,5 +90,6 @@ export default {
   common: {
     noResults: "Nenalezeny žádné výsledky",
     current: "Aktuální",
+    expires: "Vyprší {date}",
   },
 } as const satisfies Translations;

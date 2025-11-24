@@ -1,11 +1,7 @@
-import { storage } from "@wxt-dev/storage";
-
 import { Button } from "@/components/ui/button";
+import { persistentQueryClient } from "@/entrypoints/options-page/persistent-query-client";
 import useToggleButtonText from "@/hooks/useToggleButtonText";
-import {
-  invalidateQueryClientCache,
-  softCacheBusterKey,
-} from "@/services/infra/query-client/utils";
+import { persistentQueryClient as csPersistentQueryClient } from "@/plugins/__async-deps__/persistent-query-client";
 
 export default function ClearRemoteResourcesCache() {
   const [buttonText, setButtonText] = useToggleButtonText({
@@ -16,8 +12,8 @@ export default function ClearRemoteResourcesCache() {
     <Button
       variant="outline"
       onClick={async () => {
-        await storage.setItem(softCacheBusterKey, "invalidated");
-        await invalidateQueryClientCache();
+        await persistentQueryClient.wipeQueryCache();
+        await csPersistentQueryClient.wipeQueryCache();
         setButtonText("Cache cleared");
       }}
     >

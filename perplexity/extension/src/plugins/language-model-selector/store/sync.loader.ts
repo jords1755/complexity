@@ -47,12 +47,12 @@ function getModelType(modelCode: LanguageModelCode): LanguageModelType {
 
 function initializeFromCookie(): void {
   const lastSelectedLanguageModel = localStorage.getItem(
-    "cplx.last-selected-language-model",
+    "cplx:lastSelectedLanguageModel",
   );
 
   if (
     !lastSelectedLanguageModel ||
-    !isSearchLanguageModelCode(lastSelectedLanguageModel)
+    !isLanguageModelCode(lastSelectedLanguageModel)
   ) {
     return;
   }
@@ -64,40 +64,38 @@ function initializeFromCookie(): void {
 
   useBetterLanguageModelSelectorStore
     .getState()
-    .setSelectedLanguageModel(lastSelectedLanguageModel);
+    .setModel(lastSelectedLanguageModel);
 }
 
 function syncFromInternalSearchStates(): void {
-  internalSearchStatesObserverStore.subscribe((state) => {
-    if (
-      state.selectedModel == null ||
-      !isLanguageModelCode(state.selectedModel)
-    ) {
-      return;
-    }
+  internalSearchStatesObserverStore.subscribe(
+    (store) => store.model,
+    (model) => {
+      if (model == null || !isLanguageModelCode(model)) {
+        return;
+      }
 
-    useBetterLanguageModelSelectorStore
-      .getState()
-      .setSelectedLanguageModel(state.selectedModel);
-  });
+      useBetterLanguageModelSelectorStore.getState().setModel(model);
+    },
+  );
 }
 
 function syncToInternalSearchStates(): void {
-  betterLanguageModelSelectorStore.subscribe((state) => {
-    if (
-      state.selectedLanguageModel == null ||
-      !isLanguageModelCode(state.selectedLanguageModel)
-    ) {
-      return;
-    }
+  betterLanguageModelSelectorStore.subscribe(
+    (store) => store.model,
+    (model) => {
+      if (!isLanguageModelCode(model)) {
+        return;
+      }
 
-    internalSearchStatesObserverStore.getState().setInternalSearchStates({
-      selectedModel: state.selectedLanguageModel,
-    });
+      internalSearchStatesObserverStore.getState().setInternalSearchStates({
+        model: model,
+      });
 
-    setModelCookie({
-      type: getModelType(state.selectedLanguageModel),
-      modelCode: state.selectedLanguageModel,
-    });
-  });
+      setModelCookie({
+        type: getModelType(model),
+        modelCode: model,
+      });
+    },
+  );
 }

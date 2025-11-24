@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { APP_CONFIG } from "@/app.config";
 import FiberSearchService from "@/plugins/__core__/_main-world/fiber-search";
 import type { PplxWebResult } from "@/plugins/__core__/pplx-thread-export";
 import type { LanguageModelCode } from "@/services/externals/cplx-api/remote-resources/pplx-language-models/types";
@@ -12,6 +13,7 @@ export type MessageBlockFiberData = {
   answer: string;
   webResults: PplxWebResult[];
   displayModel: LanguageModelCode;
+  userSelectedModel: string;
   isInFlight: boolean;
   authorUuid: string | null;
 };
@@ -24,7 +26,7 @@ export async function getThreadMessages({
     messageNodePath: string[];
   };
 }): Promise<MessageBlockFiberData[] | null> {
-  return FiberSearchService.findFiberNodes(
+  const fiberNodes = FiberSearchService.findFiberNodes(
     {
       name: fiberConfig.name,
     },
@@ -38,7 +40,15 @@ export async function getThreadMessages({
       expectSameDepth: true,
       cache: false,
     },
-  ).map((entryNode: any): MessageBlockFiberData => {
+  );
+
+  if (fiberNodes.length === 0) {
+    if (APP_CONFIG.IS_DEV) {
+      console.error("❌ [ThreadMessages] No fiber nodes found");
+    }
+  }
+
+  return fiberNodes.map((entryNode: any): MessageBlockFiberData => {
     const entry = JSON.parse(
       JSON.stringify(walkFiberNode(entryNode, fiberConfig.messageNodePath)),
     );
@@ -62,6 +72,7 @@ export async function getThreadMessages({
         .flat(),
 
       displayModel: entry.display_model,
+      userSelectedModel: entry.user_selected_model,
       isInFlight: entry.status !== "COMPLETED",
       authorUuid: entry.author_id ?? null,
     };

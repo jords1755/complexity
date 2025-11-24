@@ -1,4 +1,5 @@
 import { AsyncLoaderRegistry } from "@/plugins/__async-deps__/async-loaders";
+import { persistentQueryClient } from "@/plugins/__async-deps__/persistent-query-client";
 import { commandMenuStore } from "@/plugins/command-menu/index.public";
 import {
   alwaysHideRelatedQuestionsCssResourceConfig,
@@ -21,27 +22,32 @@ export default async function () {
   AsyncLoaderRegistry.register({
     id: "plugin:zenMode",
     dependencies: ["cache:pluginsEnableStates", "cache:extensionSettings"],
-    loader: async ({ "cache:pluginsEnableStates": pluginsEnableStates }) => {
+    loader: async ({
+      "cache:pluginsEnableStates": pluginsEnableStates,
+      "cache:extensionSettings": extensionSettings,
+    }) => {
       if (!pluginsEnableStates["zenMode"]) return;
 
       insertCss({
-        css: await getVersionedRemoteResource(zenModeCssResourceConfig),
+        css: await getVersionedRemoteResource(
+          zenModeCssResourceConfig,
+          persistentQueryClient,
+        ),
         id: "zen-mode",
       });
 
-      const settings = ExtensionSettingsService.cachedSync;
-
-      if (settings?.plugins["zenMode"].persistent) {
+      if (extensionSettings.plugins["zenMode"].persistent) {
         $(document.body).attr(
           "data-cplx-zen-mode",
           localStorage.getItem("cplx.zen-mode.last-state") ?? "false",
         );
       }
 
-      if (settings?.plugins["zenMode"].alwaysHideRelatedQuestions) {
+      if (extensionSettings.plugins["zenMode"].alwaysHideRelatedQuestions) {
         insertCss({
           css: await getVersionedRemoteResource(
             alwaysHideRelatedQuestionsCssResourceConfig,
+            persistentQueryClient,
           ),
           id: "always-hide-related-questions",
         });
@@ -64,6 +70,6 @@ function setupKeybinding() {
     event.stopImmediatePropagation();
     event.preventDefault();
     toggleZenMode();
-    commandMenuStore.getState().setOpen(false);
+    commandMenuStore.getState().states.setOpen(false);
   });
 }

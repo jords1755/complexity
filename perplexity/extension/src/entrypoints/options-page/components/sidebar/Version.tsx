@@ -7,7 +7,7 @@ export default function Version() {
   const [clicks, setClicks] = useState(0);
   const clickResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleClick = useCallback(() => {
+  const handleClick = () => {
     if (clickResetTimeoutRef.current) {
       clearTimeout(clickResetTimeoutRef.current);
     }
@@ -18,7 +18,7 @@ export default function Version() {
     if (newClickCount >= 7) {
       setClicks(0);
 
-      if (settings?.devMode) {
+      if (settings.devMode) {
         toast({
           title: "Dev mode already enabled",
         });
@@ -37,7 +37,7 @@ export default function Version() {
     clickResetTimeoutRef.current = setTimeout(() => {
       setClicks(0);
     }, 1000);
-  }, [clicks, settings?.devMode, mutation]);
+  };
 
   return (
     <div

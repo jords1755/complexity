@@ -18,7 +18,7 @@ export function parseWebSocketData<T = unknown>(
   try {
     const parsedPacket = parser.decodePacket(data);
 
-    if (parsedPacket?.data == null) {
+    if (parsedPacket.data == null) {
       return { payload: data as T };
     }
 
@@ -31,7 +31,7 @@ export function parseWebSocketData<T = unknown>(
     return messageId != null
       ? { messageId, payload: payload as T }
       : { payload: payload as T };
-  } catch (error) {
+  } catch {
     return { payload: data as T };
   }
 }

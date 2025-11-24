@@ -1,7 +1,7 @@
 import { DropdownMenuContent } from "@/components/ui/dropdown-menu";
 import { SelectContent } from "@/components/ui/select";
 import { usePluginGuardsStore } from "@/plugins/__async-deps__/plugins-guard/store";
-import { ScopedQueryBoxContext } from "@/plugins/__ui-groups__/elements/query-box/_context/context";
+import { ScopedQueryBoxContext } from "@/plugins/__ui-groups__/elements/query-box/context";
 import LanguageModelGroup from "@/plugins/language-model-selector/components/desktop/LanguageModelGroup";
 import { LanguageModelSelectorContext } from "@/plugins/language-model-selector/context";
 import {
@@ -9,9 +9,14 @@ import {
   getModelsByType,
 } from "@/plugins/language-model-selector/utils";
 import { LanguageModelTypeIcons } from "@/services/externals/cplx-api/remote-resources/pplx-language-models/icons";
-import { PPLX_SCROLLBAR_CLASSES } from "@/utils/dom-utils/pplx-scrollbar-classes";
 
-export default function DesktopContent() {
+export default function DesktopContent({
+  children,
+  className,
+}: {
+  children?: React.ReactNode;
+  className?: string;
+}) {
   const context = use(LanguageModelSelectorContext);
 
   if (!context) throw new Error("LanguageModelSelectorContext not found");
@@ -25,27 +30,25 @@ export default function DesktopContent() {
   const isCometAssistant =
     use(ScopedQueryBoxContext)?.store.type === "comet-assistant";
 
-  const searchModels = useMemo(() => getModelsByType("search"), []);
-  const searchFastModel = useMemo(
-    () => searchModels.filter((model) => !model.isReasoning),
-    [searchModels],
+  const searchModels = getModelsByType("search");
+  const searchFastModel = searchModels.filter((model) => !model.isReasoning);
+  const searchReasoningModel = searchModels.filter(
+    (model) => model.isReasoning,
   );
-  const searchReasoningModel = useMemo(
-    () => searchModels.filter((model) => model.isReasoning),
-    [searchModels],
-  );
-  const researchModels = useMemo(() => getModelsByType("research"), []);
-  const labsModels = useMemo(() => getModelsByType("studio"), []);
-  const studyModels = useMemo(() => getModelsByType("study"), []);
-  const advancedModels = useMemo(() => getAdvancedStandaloneModels(), []);
+  const researchModels = getModelsByType("research");
+  const labsModels = getModelsByType("studio");
+  const studyModels = getModelsByType("study");
+  const advancedModels = getAdvancedStandaloneModels();
 
   return (
     <Comp
       className={cn(
-        PPLX_SCROLLBAR_CLASSES,
+        "custom-scrollbar",
         "x:flex x:max-h-[calc(var(--available-height))] x:items-start x:justify-between x:gap-2 x:overflow-y-auto x:p-2",
+        className,
       )}
     >
+      {children}
       <div className="x:flex x:items-start x:justify-between x:gap-2">
         <LanguageModelGroup
           title={

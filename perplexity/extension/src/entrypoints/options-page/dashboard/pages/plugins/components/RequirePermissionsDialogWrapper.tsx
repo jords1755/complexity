@@ -1,3 +1,5 @@
+import { useQueryClient } from "@tanstack/react-query";
+
 import type { PluginId, PluginMeta } from "@/__registries__/plugins/meta.types";
 import AsyncButton from "@/components/AsyncButton";
 import { Button } from "@/components/ui/button";
@@ -14,8 +16,6 @@ import {
 import { InlineCode } from "@/components/ui/typography";
 import { extensionPermissionsQueries } from "@/services/infra/extension-api-wrappers/extension-permissions/query-keys";
 import { useExtensionPermissions } from "@/services/infra/extension-api-wrappers/extension-permissions/useExtensionPermissions";
-import { requestPermissions } from "@/services/infra/extension-api-wrappers/extension-permissions/utils";
-import { queryClient } from "@/services/infra/query-client";
 
 export default function RequirePermissionsDialogWrapper({
   children,
@@ -30,18 +30,20 @@ export default function RequirePermissionsDialogWrapper({
   onGranted?: () => void;
   asChild?: boolean;
 }) {
+  const queryClient = useQueryClient();
+
   const [open, setOpen] = useState(false);
 
   const { data: grantedPermissions, isLoading: isPermissionsLoading } =
     useExtensionPermissions();
 
-  const hasAllRequiredPermissions = useMemo(() => {
+  const hasAllRequiredPermissions = (() => {
     if (requiredPermissions == null || grantedPermissions == null) return true;
 
     return requiredPermissions.every(({ permission }) =>
       grantedPermissions.permissions?.includes(permission),
     );
-  }, [requiredPermissions, grantedPermissions]);
+  })();
 
   if (hasAllRequiredPermissions || isPermissionsLoading) {
     return children;
@@ -86,16 +88,18 @@ export default function RequirePermissionsDialogWrapper({
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button>Cancel</Button>
           </DialogClose>
           <AsyncButton
             loadingText="Requesting..."
             onClick={async () => {
               if (requiredPermissions == null) return;
 
-              const result = await requestPermissions(
-                requiredPermissions.map(({ permission }) => permission),
-              );
+              const result = await chrome.permissions.request({
+                permissions: requiredPermissions.map(
+                  ({ permission }) => permission,
+                ),
+              });
 
               void queryClient.invalidateQueries({
                 queryKey: extensionPermissionsQueries.permissions.all(),

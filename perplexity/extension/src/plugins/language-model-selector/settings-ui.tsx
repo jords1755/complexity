@@ -1,4 +1,9 @@
 import type { PluginId } from "@/__registries__/plugins/meta.types";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { Image } from "@/components/ui/image";
 import { Switch } from "@/components/ui/switch";
 import useExtensionSettings from "@/services/infra/extension-api-wrappers/extension-settings/useExtensionSettings";
@@ -9,8 +14,6 @@ export const pluginId: PluginId = "queryBox:languageModelSelector";
 
 export default function LanguageModelSelectorPluginSettingsUi() {
   const { settings, mutation } = useExtensionSettings();
-
-  if (!settings) return null;
 
   return (
     <div className="x:flex x:flex-col x:gap-4 x:overflow-y-auto">
@@ -30,9 +33,7 @@ export default function LanguageModelSelectorPluginSettingsUi() {
       </div>
       <Switch
         textLabel="Enable"
-        checked={
-          settings.plugins["queryBox:languageModelSelector"].enabled ?? false
-        }
+        checked={settings.plugins["queryBox:languageModelSelector"].enabled}
         onCheckedChange={({ checked }) => {
           mutation.mutate((draft) => {
             draft.plugins["queryBox:languageModelSelector"].enabled = checked;
@@ -40,19 +41,45 @@ export default function LanguageModelSelectorPluginSettingsUi() {
         }}
       />
       {settings.plugins["queryBox:languageModelSelector"].enabled && (
-        <div className="x:flex x:flex-col x:gap-2">
+        <div className="x:flex x:flex-col x:gap-4">
+          <Switch
+            textLabel={
+              <HoverCard openDelay={0}>
+                <HoverCardTrigger className="x:underline x:decoration-dashed x:underline-offset-2">
+                  Show model selection mismatch warning
+                </HoverCardTrigger>
+                <HoverCardContent>
+                  <Image
+                    src="https://images2.imgbox.com/65/94/RhJ98dAM_o.png"
+                    alt="Model selection mismatch warning"
+                    className="x:w-full"
+                  />
+                </HoverCardContent>
+              </HoverCard>
+            }
+            checked={
+              settings.plugins["queryBox:languageModelSelector"]
+                .showModelSelectionMismatchWarning
+            }
+            onCheckedChange={({ checked }) => {
+              mutation.mutate((draft) => {
+                draft.plugins[
+                  "queryBox:languageModelSelector"
+                ].showModelSelectionMismatchWarning = checked;
+              });
+            }}
+          />
           {settings.devMode && (
             <Switch
-              textLabel="Change timezone"
+              textLabel="Spoof timezone"
               checked={
-                settings.plugins["queryBox:languageModelSelector"]
-                  .changeTimezone ?? false
+                settings.plugins["queryBox:languageModelSelector"].spoofTimezone
               }
               onCheckedChange={({ checked }) => {
                 mutation.mutate((draft) => {
                   draft.plugins[
                     "queryBox:languageModelSelector"
-                  ].changeTimezone = checked;
+                  ].spoofTimezone = checked;
                 });
               }}
             />

@@ -10,7 +10,7 @@ export const baseManifest: ManifestV3Options = {
   manifest_version: 3,
   name: "Complexity | Perplexity AI Supercharged",
   description:
-    "Enhance Perplexity AI with fast model switching, custom themes, and advanced features for seamless AI conversations",
+    "Power-user toolkit: Quick model switching, custom themes, enhanced code blocks, export tools, and 20+ productivity features.",
   version: packageData.version,
   homepage_url: "https://cplx.app",
 
@@ -35,7 +35,7 @@ export const baseManifest: ManifestV3Options = {
     "declarativeNetRequestWithHostAccess",
     "scripting",
   ],
-  optional_permissions: ["webNavigation"],
+  optional_permissions: ["webNavigation", "management"],
 
   host_permissions: [
     ...APP_CONFIG["perplexity-ai"].globalMatches,
@@ -48,7 +48,8 @@ export const baseManifest: ManifestV3Options = {
       matches: APP_CONFIG["perplexity-ai"].globalMatches,
       exclude_matches: APP_CONFIG["perplexity-ai"].globalExcludeMatches,
       js: ["src/entrypoints/content-scripts/index.ts"],
-      run_at: "document_end",
+      run_at:
+        APP_CONFIG.BROWSER === "firefox" ? "document_end" : "document_start",
     },
     {
       matches: APP_CONFIG["perplexity-ai"].globalMatches,

@@ -1,6 +1,6 @@
 import { subscribeWithSelector } from "zustand/middleware";
-import { immer } from "zustand/middleware/immer";
 import { createWithEqualityFn } from "zustand/traditional";
+import { mutative } from "zustand-mutative";
 
 import { DomObserversMainWorldActions } from "@/plugins/__core__/dom-observers/_main-world";
 import {
@@ -14,7 +14,7 @@ import type {
 
 export type SearchStates = {
   sources: string[];
-  selectedModel: LanguageModelCode | null;
+  model: LanguageModelCode | null;
   searchMode: LanguageModelType;
 };
 
@@ -25,15 +25,15 @@ export type InternalSearchStatesObserverStoreType = SearchStates & {
 export const internalSearchStatesObserverStore =
   createWithEqualityFn<InternalSearchStatesObserverStoreType>()(
     subscribeWithSelector(
-      immer(
+      mutative(
         (): InternalSearchStatesObserverStoreType => ({
           sources: [],
-          selectedModel: null,
+          model: null,
           searchMode: "search",
           setInternalSearchStates(state) {
             void DomObserversMainWorldActions.Instance.setInternalSearchStates({
               states: {
-                selectedModel: state.selectedModel,
+                model: state.model,
                 searchMode: state.searchMode,
                 sources: state.sources,
               },

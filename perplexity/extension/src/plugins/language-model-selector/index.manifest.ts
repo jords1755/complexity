@@ -10,7 +10,8 @@ declare module "@/__registries__/plugins/meta.types" {
 
 const schema = z.object({
   enabled: z.boolean(),
-  changeTimezone: z.boolean(),
+  showModelSelectionMismatchWarning: z.boolean(),
+  spoofTimezone: z.boolean(),
 });
 
 export default definePlugin({
@@ -20,15 +21,15 @@ export default definePlugin({
     description: "Take complete control of all available language models",
     dashboardMeta: {
       tags: ["ui", "pplxPro", "cometAssistant"],
-      categories: ["queryBox"],
+      categories: ["queryBox", "comet"],
       uiRouteSegment: "query-box-language-model-selector",
     },
     dependencies: {
       corePlugins: [
         "networkIntercept",
-        "spaRouter",
         "domObservers:queryBoxes",
         "domObservers:internalSearchStates",
+        "domObservers:thread:messageBlocks",
       ],
       uiGroups: [
         "queryBoxes:toolbar:main:ll",
@@ -42,7 +43,8 @@ export default definePlugin({
     schema,
     fallback: {
       enabled: false,
-      changeTimezone: false,
+      showModelSelectionMismatchWarning: true,
+      spoofTimezone: false,
     },
   },
 });

@@ -12,7 +12,7 @@ import TablerPlus from "~icons/tabler/plus";
 export function ThemesListing() {
   const navigate = useNavigate();
 
-  const builtInThemes = useMemo(() => BUILTIN_THEME_REGISTRY, []);
+  const builtInThemes = BUILTIN_THEME_REGISTRY;
 
   const { data: localThemes } = useLocalThemes();
 

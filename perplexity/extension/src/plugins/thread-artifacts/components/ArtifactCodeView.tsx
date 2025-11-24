@@ -8,12 +8,12 @@ import { getInterpretedArtifactLanguage } from "@/plugins/thread-artifacts/utils
 
 export default function ArtifactCodeView() {
   const colorScheme = useColorSchemeStore(
-    (state) => state.colorScheme,
+    (store) => store.colorScheme,
     deepEqual,
   );
 
   const selectedCodeBlockLocation = useArtifactsStore(
-    (state) => state.selectedCodeBlockLocation,
+    (store) => store.selection.selectedCodeBlockLocation,
   );
   const selectedCodeBlock = useThreadCodeBlock({
     messageBlockIndex: selectedCodeBlockLocation?.messageBlockIndex,
@@ -26,25 +26,15 @@ export default function ArtifactCodeView() {
     selectedCodeBlock?.content.language ?? "",
   );
 
-  const lineNumberStyle = useMemo((): CSSProperties => {
-    return {
-      color: "oklch(var(--muted-foreground))",
-    };
-  }, []);
-
-  const preTag = useMemo(() => {
-    const PreComponent = ({ children }: { children: ReactNode }) => (
-      <pre className="x:px-4 x:py-2">{children}</pre>
-    );
-    PreComponent.displayName = "PreTag";
-    return PreComponent;
-  }, []);
+  const lineNumberStyle: CSSProperties = {
+    color: "oklch(var(--muted-foreground))",
+  };
 
   return (
     <div
       id="artifact-code-view"
       className={cn(
-        "x:h-full x:w-max x:min-w-full x:text-xs x:[&_span.linenumber]:!text-muted-foreground x:[&>pre]:m-0 x:[&>pre]:size-full x:[&>pre]:rounded-t-none",
+        "x:h-full x:w-max x:min-w-full x:text-xs x:[&_span.linenumber]:text-muted-foreground! x:[&>pre]:m-0 x:[&>pre]:size-full x:[&>pre]:rounded-t-none",
         {
           "x:[&_span]:duration-300 x:[&_span]:animate-in x:[&_span]:fade-in":
             isInFlight,
@@ -56,10 +46,14 @@ export default function ArtifactCodeView() {
         colorScheme={colorScheme === "light" ? "light" : "dark"}
         language={language}
         lineNumberStyle={lineNumberStyle}
-        PreTag={preTag}
+        PreTag={PreTag}
       >
         {codeString}
       </CodeHighlighter>
     </div>
   );
+}
+
+function PreTag({ children }: { children: ReactNode }) {
+  return <pre className="x:px-4 x:py-2">{children}</pre>;
 }

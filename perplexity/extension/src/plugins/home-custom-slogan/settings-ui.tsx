@@ -11,23 +11,17 @@ export const pluginId: PluginId = "home:customSlogan";
 export default function CustomHomeSloganPluginSettingsUi() {
   const { settings, mutation } = useExtensionSettings();
 
-  const debouncedMutate = useMemo(
-    () =>
-      debounce((newValue: string) => {
-        mutation.mutate((draft) => {
-          draft.plugins["home:customSlogan"].slogan = newValue;
-        });
-      }, 300),
-    [mutation],
-  );
-
-  if (!settings) return null;
+  const debouncedMutate = debounce((newValue: string) => {
+    mutation.mutate((draft) => {
+      draft.plugins["home:customSlogan"].slogan = newValue;
+    });
+  }, 300);
 
   return (
     <div className="x:flex x:flex-col x:gap-4">
       <Switch
         textLabel="Enable"
-        checked={settings?.plugins["home:customSlogan"].enabled}
+        checked={settings.plugins["home:customSlogan"].enabled}
         onCheckedChange={({ checked }) =>
           mutation.mutate((draft) => {
             draft.plugins["home:customSlogan"].enabled = checked;
@@ -37,7 +31,7 @@ export default function CustomHomeSloganPluginSettingsUi() {
       <div className="x:flex x:flex-col x:gap-2">
         <Label className="x:text-muted-foreground">Slogan</Label>
         <Input
-          defaultValue={settings?.plugins["home:customSlogan"].slogan}
+          defaultValue={settings.plugins["home:customSlogan"].slogan}
           onChange={({ target: { value } }) => debouncedMutate(value)}
         />
       </div>

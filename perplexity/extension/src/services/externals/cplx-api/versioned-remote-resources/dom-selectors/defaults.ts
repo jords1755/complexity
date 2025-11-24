@@ -1,62 +1,57 @@
+import type { DomSelectors } from "@/services/externals/cplx-api/versioned-remote-resources/dom-selectors/types";
+
 /**
  * Mixes of both native css and jquery selectors, so always use jQuery instead of document.querySelector
  */
-
-import type { DomSelectors } from "@/services/externals/cplx-api/versioned-remote-resources/dom-selectors/types";
-
-export const DOM_SELECTORS: DomSelectors = {
-  PAGE_WRAPPER: ".h-\\[100dvh\\]",
-  PAGE_CHILD_WRAPPER: ".h-\\[100dvh\\] > [class^=erp][style^=padding]",
+export const DOM_SELECTORS = {
+  ROOT: "#root",
+  PAGE_WRAPPER:
+    "#root > .border-subtlest.ring-subtlest.divide-subtlest.bg-underlay",
   SIDEBAR: {
     WRAPPER: ".group\\/sidebar",
     CHILD: {
       MENU: ".group\\/sidebar-menu",
     },
-    MOBILE_TRIGGER: `.h-headerHeight.absolute button:has(svg>path[d="M4 6l16 0 M4 12l16 0 M4 18l16 0"])`,
+    MOBILE_TRIGGER: `.h-headerHeight.backdrop-blur-md button:has(svg > use[*|href="#pplx-icon-menu-2"])`,
+    PIN_SIDEBAR_BUTTON: 'button[data-testid="sidebar-pin-sidebar"]',
   },
   THREAD: {
-    /** The outermost container that wraps the thread container and the query box */
-    NAVBAR: ".h-headerHeight.absolute",
-    PAGE_WRAPPER: ".h-\\[100dvh\\] > .max-h-screen",
-    WRAPPER: ".h-headerHeight.absolute + div",
+    NAVBAR: ".h-headerHeight.backdrop-blur-md",
+    WRAPPER: ".h-headerHeight.backdrop-blur-md + div",
     /** The container that wraps all messages */
     MESSAGE_BLOCKS_WRAPPER: {
       DESKTOP: {
-        NORMAL: `.h-headerHeight.absolute + div > div:first-child > div:last-child`,
-        BRANCHED: `.h-headerHeight.absolute + div > div:first-child > div:last-child`,
+        NORMAL: `.h-headerHeight.backdrop-blur-md + div > div:first-child > div:last-child`,
+        BRANCHED: `.h-headerHeight.backdrop-blur-md + div > div:first-child > div:last-child`,
       },
       MOBILE: {
-        NORMAL: `.h-headerHeight.absolute + div > div:first-child > div:last-child`,
-        BRANCHED: `.h-headerHeight.absolute + div > div:first-child > div:last-child`,
+        NORMAL: `.h-headerHeight.backdrop-blur-md + div > div:first-child > div:last-child`,
+        BRANCHED: `.h-headerHeight.backdrop-blur-md + div > div:first-child > div:last-child`,
       },
     },
     MESSAGE: {
-      QUERY_WRAPPER: ".isolate.mx-auto > .max-w-threadContentWidth:first-child",
+      QUERY_WRAPPER: ".isolate.mx-auto > .bg-base",
       QUERY: ".group\\/query",
       QUERY_EDIT_BUTTON_GROUP:
         ".absolute.bottom-0.right-0:not(.pointer-events-none)",
       QUERY_EDIT_BUTTON_GROUP_CHILD: {
-        EDIT_QUERY_BUTTON: "button:has(svg[data-icon='pen-to-square'])",
+        EDIT_QUERY_BUTTON: 'button[data-testid="edit-query-button"]',
       },
-      STICKY_HEADER: ".h-headerHeight.absolute",
+      STICKY_HEADER: ".h-headerHeight.backdrop-blur-md",
       SOURCES: ".gap-sm.grid.grid-cols-4.md\\:px-0",
+      CONTENT_WRAPPER:
+        ".isolate.mx-auto > .bg-base ~ .max-w-threadContentWidth",
       ANSWER: "div[id*='markdown-content-']",
-      ANSWER_TEXT_ALTERNATE: ".max-w-threadContentWidth",
       ANSWER_TEXT_CONTENT: ".prose.text-pretty",
       /** The footer of the message (share, rewrite, model name, etc.) */
-      FOOTER:
-        ".gap-y-sm.md\\:gap-y-md.flex.flex-col > .flex.items-center.justify-between",
+      FOOTER: ".gap-y-md.flex.flex-col > .flex.items-center.justify-between",
       FOOTER_CHILD: {
-        REWRITE_BUTTON:
-          'button:has(svg>path[d="M4 12v-3a3 3 0 0 1 3 -3h13m-3 -3l3 3l-3 3 M20 12v3a3 3 0 0 1 -3 3h-13m3 3l-3 -3l3 -3"])',
-        REWRITE_BUTTON_WRAPPER:
-          'div:has(>span>button svg>path[d="M4 12v-3a3 3 0 0 1 3 -3h13m-3 -3l3 3l-3 3 M20 12v3a3 3 0 0 1 -3 3h-13m3 3l-3 -3l3 -3"])',
-        COPY_BUTTON:
-          'button:has(>div>div>svg>path[d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"])',
-        THUMBS_DOWN_BUTTON:
-          'button:has(>div>div>svg>path[d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"])',
-        MISC_BUTTON_WRAPPER:
-          'div:has(>span>button>div>div>svg>path[d="M5 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0 M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0 M19 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"])',
+        DISPLAY_MODEL_BUTTON: 'button:has(use[*|href="#pplx-icon-cpu"])',
+        REWRITE_BUTTON: 'button:has(use[*|href="#pplx-icon-repeat"])',
+        REWRITE_BUTTON_WRAPPER: 'button:has(use[*|href="#pplx-icon-repeat"])',
+        COPY_BUTTON: 'button:has(use[*|href="#pplx-icon-copy"])',
+        THUMBS_DOWN_BUTTON: 'button:has(use[*|href="#pplx-icon-thumb-down"])',
+        MISC_BUTTON_WRAPPER: 'div:has(>button use[*|href="#pplx-icon-dots"])',
       },
       IMAGE_GEN: {
         HEADER: "div:has(+.gap-sm.grid.grid-cols-2)",
@@ -102,10 +97,10 @@ export const DOM_SELECTORS: DomSelectors = {
       EDIT_QUERY: "div[contenteditable='true'][role='textbox']:not([id])",
       ARBITRARY: "#ask-input,div[contenteditable='true'][role='textbox']",
     },
-    ATTACH_BUTTON: 'button:has([data-icon="paperclip"]):last',
+    ATTACH_BUTTON: 'button:has(use[*|href="#pplx-icon-paperclip"])',
     SUBMIT_BUTTON:
-      'button[data-testid="submit-button"], button:has(>div>div>svg>path[d="M0 12.6663C0 13.4018 0.59792 13.9997 1.33333 13.9997C2.06875 13.9997 2.66667 13.4018 2.66667 12.6663V11.333C2.66667 10.5975 2.06875 9.99967 1.33333 9.99967C0.59792 9.99967 0 10.5975 0 11.333V12.6663ZM6.66667 5.33301C7.40213 5.33301 8 5.93087 8 6.66634V17.333C8 18.0685 7.40213 18.6663 6.66667 18.6663C5.9312 18.6663 5.33333 18.0685 5.33333 17.333V6.66634C5.33333 5.93087 5.9312 5.33301 6.66667 5.33301ZM10.6667 21.333C10.6667 22.0685 11.2645 22.6663 12 22.6663C12.7355 22.6663 13.3333 22.0685 13.3333 21.333V2.66634C13.3333 1.93093 12.7355 1.33301 12 1.33301C11.2645 1.33301 10.6667 1.93093 10.6667 2.66634V21.333ZM17.3333 5.33301C18.0688 5.33301 18.6667 5.93087 18.6667 6.66634V17.333C18.6667 18.0685 18.0688 18.6663 17.3333 18.6663C16.5979 18.6663 16 18.0685 16 17.333V6.66634C16 5.93087 16.5979 5.33301 17.3333 5.33301ZM24 11.333C24 10.5975 23.4021 9.99967 22.6667 9.99967C21.9312 9.99967 21.3333 10.5975 21.3333 11.333V12.6663C21.3333 13.4018 21.9312 13.9997 22.6667 13.9997C23.4021 13.9997 24 13.4018 24 12.6663V11.333Z"]), button:has(>div>div>svg>path[d="M17 4h-10a3 3 0 0 0 -3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3 -3v-10a3 3 0 0 0 -3 -3z"])',
-    FORK_BUTTON: 'button svg[data-icon="code-fork"]',
+      'button[data-testid="submit-button"], button:has(>div>div>svg>path[d="M0 12.6663C0 13.4018 0.59792 13.9997 1.33333 13.9997C2.06875 13.9997 2.66667 13.4018 2.66667 12.6663V11.333C2.66667 10.5975 2.06875 9.99967 1.33333 9.99967C0.59792 9.99967 0 10.5975 0 11.333V12.6663ZM6.66667 5.33301C7.40213 5.33301 8 5.93087 8 6.66634V17.333C8 18.0685 7.40213 18.6663 6.66667 18.6663C5.9312 18.6663 5.33333 18.0685 5.33333 17.333V6.66634C5.33333 5.93087 5.9312 5.33301 6.66667 5.33301ZM10.6667 21.333C10.6667 22.0685 11.2645 22.6663 12 22.6663C12.7355 22.6663 13.3333 22.0685 13.3333 21.333V2.66634C13.3333 1.93093 12.7355 1.33301 12 1.33301C11.2645 1.33301 10.6667 1.93093 10.6667 2.66634V21.333ZM17.3333 5.33301C18.0688 5.33301 18.6667 5.93087 18.6667 6.66634V17.333C18.6667 18.0685 18.0688 18.6663 17.3333 18.6663C16.5979 18.6663 16 18.0685 16 17.333V6.66634C16 5.93087 16.5979 5.33301 17.3333 5.33301ZM24 11.333C24 10.5975 23.4021 9.99967 22.6667 9.99967C21.9312 9.99967 21.3333 10.5975 21.3333 11.333V12.6663C21.3333 13.4018 21.9312 13.9997 22.6667 13.9997C23.4021 13.9997 24 13.4018 24 12.6663V11.333Z"]), button:has(use[*|href="#pplx-icon-git-fork"])',
+    FORK_BUTTON: 'button:has(use[*|href="#pplx-icon-git-fork"])',
     PRO_SEARCH_TOGGLE: "button#copilot-toggle",
     INCOGNITO_TOGGLE: ".mr-xs.flex.shrink-0.items-center",
     TYPEAHEAD_MENU: "#typeahead-menu",
@@ -123,21 +118,22 @@ export const DOM_SELECTORS: DomSelectors = {
       BACK_BUTTON: ".mb-3.ml-2.flex.md\\:px-2",
     },
   },
-  STICKY_NAVBAR: ".h-headerHeight.absolute",
+  STICKY_NAVBAR: ".h-headerHeight.backdrop-blur-md",
   SICKY_NAVBAR_CHILD: {
     THREAD_TITLE_WRAPPER:
       ".hidden.max-w-md.grow.items-center.justify-center.gap-x-xs.text-center.md\\:flex",
     THREAD_TITLE:
       ".min-w-0 .cursor-pointer.transition.duration-300.hover\\:opacity-70",
     THREAD_TITLE_INPUT: 'input[placeholder="Untitled"]',
-    OVERFLOW_MENU_BUTTON_WRAPPER: `div:has(>span>button>div>div>svg>path[d="M5 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0 M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0 M19 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"])`,
+    OVERFLOW_MENU_BUTTON_WRAPPER: `div:not(:is(.invisible *)):has(>button svg > use[*|href="#pplx-icon-dots"])`,
   },
-} as const;
+} as const satisfies DomSelectors;
 
 /**
  * Selectors that are generated by the extension.
  */
 export const INTERNAL_ATTRIBUTES = {
+  PAGE_WRAPPER: "page-wrapper",
   SIDEBAR: {
     WRAPPER: "sidebar-wrapper",
     MOBILE_TRIGGER: "sidebar-mobile-trigger",
@@ -153,10 +149,8 @@ export const INTERNAL_ATTRIBUTES = {
   THREAD: {
     NAVBAR: "thread-navbar",
     NAVBAR_CHILD: {
-      EXPORT_THREAD_BUTTON: "thread-export-button",
       OVERFLOW_MENU_BUTTON_WRAPPER: "thread-overflow-menu-button-wrapper",
     },
-    PAGE_WRAPPER: "thread-page-wrapper",
     WRAPPER: "thread-wrapper",
     MESSAGE_BLOCKS_WRAPPER: "thread-message-blocks-wrapper",
     TOC_CONTAINER: "thread-toc-container",
@@ -170,6 +164,12 @@ export const INTERNAL_ATTRIBUTES = {
       FOOTER: "message-block-footer",
     },
     ATTACHMENT_DROP_ZONE: "drag-n-drop-file-to-upload",
+  },
+  QUERY_BOX: {
+    MAIN_QUERY_BOX: "cplx-main-query-box",
+    SPACE_QUERY_BOX: "cplx-space-query-box",
+    FOLLOW_UP_QUERY_BOX: "cplx-follow-up-query-box",
+    COMET_ASSISTANT_QUERY_BOX: "cplx-comet-assistant-query-box",
   },
   QUERY_BOX_CHILD: {
     COMPONENTS_WRAPPER: "query-box-components-wrapper",

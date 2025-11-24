@@ -5,15 +5,17 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Ul } from "@/components/ui/typography";
+import { persistentQueryClient } from "@/entrypoints/options-page/persistent-query-client";
+import { persistentQueryClient as csPersistentQueryClient } from "@/plugins/__async-deps__/persistent-query-client";
 import { ExtensionSettingsService } from "@/services/infra/extension-api-wrappers/extension-settings";
 import { db } from "@/services/infra/indexed-db";
-import { invalidateQueryClientCache } from "@/services/infra/query-client/utils";
 
 export default function ClearAllDataButton() {
   const navigate = useNavigate();
@@ -21,7 +23,8 @@ export default function ClearAllDataButton() {
   const handleClearData = async () => {
     await ExtensionSettingsService.reset();
     await db.clearAll();
-    await invalidateQueryClientCache();
+    await persistentQueryClient.wipeQueryCache();
+    await csPersistentQueryClient.wipeQueryCache();
     void navigate("/plugins");
   };
 
@@ -34,7 +37,7 @@ export default function ClearAllDataButton() {
         <DialogHeader>
           <DialogTitle>Clear All Data</DialogTitle>
         </DialogHeader>
-        <div>
+        <DialogDescription>
           Are you sure you want to clear all extension data? This action cannot
           be undone and will wipe the following data:
           <Ul>
@@ -42,12 +45,12 @@ export default function ClearAllDataButton() {
             <li>All custom themes, code blocks rules, etc.</li>
             <li>And any other data stored by the extension</li>
           </Ul>
-        </div>
+        </DialogDescription>
         <DialogFooter>
           <DialogTrigger asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button>Cancel</Button>
           </DialogTrigger>
-          <AsyncButton variant="destructive" onClick={handleClearData}>
+          <AsyncButton variant="caution" onClick={handleClearData}>
             Yes, Clear All Data
           </AsyncButton>
         </DialogFooter>

@@ -2,16 +2,19 @@ import { QueryObserver } from "@tanstack/react-query";
 
 import { isMobileStore } from "@/hooks/is-mobile-store";
 import { AsyncLoaderRegistry } from "@/plugins/__async-deps__/async-loaders";
+import { persistentQueryClient } from "@/plugins/__async-deps__/persistent-query-client";
 import {
   pluginGuardsStore,
   type PluginGuardsStoreType,
 } from "@/plugins/__async-deps__/plugins-guard/store";
 import { spaRouteChangeCompleteSubscribe } from "@/plugins/__core__/_main-world/spa-router/utils";
-import type { PplxAuthSessionApiResponse } from "@/services/externals/pplx-api/pplx-api.types";
+import type {
+  PplxAuthSessionApiResponse,
+  PplxOrgSettingsApiResponse,
+} from "@/services/externals/pplx-api/pplx-api.types";
 import { pplxApiQueries } from "@/services/externals/pplx-api/query-keys";
 import { getPermissions } from "@/services/infra/extension-api-wrappers/extension-permissions/utils";
 import type { ExtensionSettings } from "@/services/infra/extension-api-wrappers/extension-settings/types";
-import { queryClient } from "@/services/infra/query-client";
 import { whereAmI } from "@/utils/misc/utils";
 
 declare module "@/plugins/__async-deps__/async-loaders" {
@@ -20,26 +23,34 @@ declare module "@/plugins/__async-deps__/async-loaders" {
   }
 }
 
-export const pplxAuthQueryObserver = new QueryObserver(
-  queryClient,
-  pplxApiQueries.auth.detail(),
-);
+const getPplxAuthQueryObserver = () =>
+  new QueryObserver(
+    persistentQueryClient.queryClient,
+    pplxApiQueries.auth.detail(),
+  );
 
-export const pplxAuthOrgStatusQueryObserver = new QueryObserver(
-  queryClient,
-  pplxApiQueries.auth.orgStatus.detail(),
-);
+const getPplxAuthOrgStatusQueryObserver = () =>
+  new QueryObserver(
+    persistentQueryClient.queryClient,
+    pplxApiQueries.auth.orgStatus.detail(),
+  );
 
 export default function () {
   AsyncLoaderRegistry.register({
     id: "store:pluginGuards",
-    dependencies: ["cache:extensionSettings"],
-    loader: async ({ "cache:extensionSettings": extensionSettings }) => {
+    dependencies: [
+      "cache:extensionSettings",
+      "store:pluginGuards:authApiPrefetch",
+    ],
+    loader: async ({
+      "cache:extensionSettings": extensionSettings,
+      "store:pluginGuards:authApiPrefetch": authData,
+    }) => {
       // pluginGuardsStore.subscribe((state) => console.log(state));
 
       setupLocationTracking();
       setupMobileStateSubscription();
-      setupAuthenticationTracking(extensionSettings);
+      setupAuthenticationTracking(extensionSettings, authData);
 
       await setupPermissionsTracking();
 
@@ -74,7 +85,7 @@ function setupMobileStateSubscription() {
   );
 }
 
-export function initAuthStatus({
+function initAuthStatus({
   data,
   extensionSettings,
 }: {
@@ -84,9 +95,14 @@ export function initAuthStatus({
   const userData = data.user;
 
   pluginGuardsStore.setState((state) => {
-    state.isLoggedIn = Object.keys(data).length > 0;
+    const isLoggedIn = Object.keys(data).length > 0;
+
+    state.isLoggedIn = isLoggedIn;
+
+    if (!isLoggedIn) return;
+
     const hasActiveSub =
-      userData.subscription_status != null &&
+      userData.subscription_status !== undefined &&
       userData.subscription_status !== "none";
 
     state.hasActiveSub = hasActiveSub;
@@ -106,25 +122,27 @@ export function initAuthStatus({
   });
 }
 
-function setupAuthenticationTracking(extensionSettings: ExtensionSettings) {
-  pplxAuthQueryObserver.subscribe((data) => {
-    if (
-      data.status !== "success" ||
-      data.fetchStatus !== "idle" ||
-      data.data == null
-    )
-      return;
+function setupAuthenticationTracking(
+  extensionSettings: ExtensionSettings,
+  authData: {
+    authDetail: PplxAuthSessionApiResponse;
+    orgDetail: PplxOrgSettingsApiResponse;
+  },
+) {
+  initAuthStatus({ data: authData.authDetail, extensionSettings });
+
+  getPplxAuthQueryObserver().subscribe((data) => {
+    if (data.status !== "success" || data.fetchStatus !== "idle") return;
 
     initAuthStatus({ data: data.data, extensionSettings });
   });
 
-  pplxAuthOrgStatusQueryObserver.subscribe((data) => {
-    if (
-      data.status !== "success" ||
-      data.fetchStatus !== "idle" ||
-      data.data == null
-    )
-      return;
+  pluginGuardsStore.setState((state) => {
+    state.isOrgMember = authData.orgDetail.is_in_organization;
+  });
+
+  getPplxAuthOrgStatusQueryObserver().subscribe((data) => {
+    if (data.status !== "success" || data.fetchStatus !== "idle") return;
 
     pluginGuardsStore.setState((state) => {
       state.isOrgMember = data.data.is_in_organization;
@@ -132,7 +150,7 @@ function setupAuthenticationTracking(extensionSettings: ExtensionSettings) {
   });
 
   // const unsubscribeLoginGuard = pluginGuardsStore.subscribe(
-  //   (state) => state.isLoggedIn,
+  //   (store) => store.isLoggedIn,
   //   (isLoggedIn) => {
   //     if (isLoggedIn === false) return;
 

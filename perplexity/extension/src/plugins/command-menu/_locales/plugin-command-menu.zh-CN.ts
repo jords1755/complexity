@@ -39,6 +39,8 @@ export default {
   },
   spaces: {
     footer: {
+      copyId: "复制 ID",
+      copyIdSuccess: "✅ ID 已复制到剪贴板",
       openInNewTab: "在新标签页中打开",
       searchInSpace: "在空间中搜索",
       goToSpace: "前往空间",
@@ -88,5 +90,6 @@ export default {
   common: {
     noResults: "未找到结果",
     current: "当前",
+    expires: "于 {date} 过期",
   },
 } as const satisfies Translations;

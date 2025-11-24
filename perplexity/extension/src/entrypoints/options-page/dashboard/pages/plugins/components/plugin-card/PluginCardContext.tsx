@@ -1,14 +1,12 @@
-import type { ReactNode } from "react";
-
 import type { PluginSettingsUIs } from "@/__registries__/plugin-settings-uis";
 import type { PluginId, PluginMeta } from "@/__registries__/plugins/meta.types";
-import type { PluginTagValues } from "@/data/dashboard/plugin-tags";
+import type { PluginTagKeys } from "@/data/dashboard/plugin-meta/types";
 import { usePluginCard } from "@/entrypoints/options-page/dashboard/pages/plugins/components/plugin-card/usePluginCard";
 import {
   getLockdownSubText,
   getLockdownText,
   isPluginLockedDown,
-} from "@/entrypoints/options-page/dashboard/pages/plugins/components/plugin-card/usePluginLockdown";
+} from "@/entrypoints/options-page/dashboard/pages/plugins/components/plugin-card/utils";
 import usePluginsStates from "@/entrypoints/options-page/dashboard/pages/plugins/hooks/usePluginsStates";
 import useExtensionSettings from "@/services/infra/extension-api-wrappers/extension-settings/useExtensionSettings";
 
@@ -16,8 +14,8 @@ type PluginCardContextType = {
   pluginId: PluginId;
   pluginInfo: {
     title: string;
-    description: ReactNode;
-    tags: readonly PluginTagValues[];
+    description: React.ReactNode;
+    tags: readonly PluginTagKeys[];
     requiredPermissions: NonNullable<
       PluginMeta<PluginId>["extensionPermissions"]
     >["requiredPermissions"];
@@ -44,7 +42,7 @@ export function PluginCardProvider({
   children,
   pluginId,
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
   pluginId: PluginId;
 }) {
   const { pluginInfo, state, actions } = usePluginCard(pluginId);
@@ -55,44 +53,31 @@ export function PluginCardProvider({
   const lockdownText = getLockdownText(pluginId, pluginsStates);
   const lockdownSubText = getLockdownSubText(pluginId, pluginsStates);
 
-  const isEnabled =
-    useExtensionSettings().settings?.plugins[pluginId].enabled ?? false;
+  const isEnabled = useExtensionSettings().settings.plugins[pluginId].enabled;
 
-  const value = useMemo(
-    () =>
-      ({
-        pluginId,
-        pluginInfo,
-        state: {
-          ...state,
-          isEnabled,
-          isLockedDown,
-          lockdownText,
-          lockdownSubText,
-        },
-        actions,
-      }) satisfies PluginCardContextType,
-    [
-      pluginId,
-      pluginInfo,
-      state,
+  const value = {
+    pluginId,
+    pluginInfo,
+    state: {
+      ...state,
       isEnabled,
       isLockedDown,
       lockdownText,
       lockdownSubText,
-      actions,
-    ],
-  );
+    },
+    actions,
+  } satisfies PluginCardContextType;
 
   return <PluginCardContext value={value}>{children}</PluginCardContext>;
 }
 
 export function usePluginCardContext() {
   const context = use(PluginCardContext);
-  if (context === null) {
-    throw new Error(
-      "usePluginCardContext must be used within a PluginCardProvider",
-    );
-  }
+
+  invariant(
+    context != null,
+    "usePluginCardContext must be used within a PluginCardProvider",
+  );
+
   return context;
 }

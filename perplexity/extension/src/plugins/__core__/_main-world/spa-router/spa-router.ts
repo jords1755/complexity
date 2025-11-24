@@ -10,8 +10,6 @@ import {
 import { waitForSpaIdle } from "@/utils/dom-utils/generics";
 import { whereAmI } from "@/utils/misc/utils";
 
-onlyMainWorldGuard();
-
 export function proxySpaRouter() {
   const originalPushState = history.pushState;
   const originalReplaceState = history.replaceState;
@@ -49,30 +47,29 @@ const dispatchRouteChange = (function () {
     trigger: RouterEvent;
     newUrl: string;
   }) {
-    const url = new URL(newUrl, window.location.href);
-    const fullUrl = url.pathname + url.search + url.hash;
+    const url = new URL(newUrl, window.location.href).toString();
 
-    if (fullUrl !== lastDispatchedUrl) {
-      lastDispatchedUrl = fullUrl;
+    if (url !== lastDispatchedUrl) {
+      lastDispatchedUrl = url;
 
       window.dispatchEvent(
         new CustomEvent<RouteChangeEventDetail>(spaRouterRouteChangeEvent, {
           detail: {
             state: "pending",
             trigger,
-            newUrl: fullUrl,
+            newUrl: url,
           },
         }),
       );
 
-      // await waitForRouteChangeComplete(whereAmI(fullUrl));
+      // await waitForRouteChangeComplete(whereAmI(url));
 
       await waitForSpaIdle();
 
-      if (fullUrl !== lastDispatchedUrl) {
+      if (url !== lastDispatchedUrl) {
         console.warn(
           "[SPA Router] Stale state detected.",
-          `Attempted to route to ${fullUrl} but the last dispatched url is ${lastDispatchedUrl}`,
+          `Attempted to route to ${url} but the last dispatched url is ${lastDispatchedUrl}`,
         );
         return;
       }
@@ -82,12 +79,12 @@ const dispatchRouteChange = (function () {
           detail: {
             state: "complete",
             trigger,
-            newUrl: fullUrl,
+            newUrl: url,
           },
         }),
       );
 
-      applyRouteIdAttribute(whereAmI(fullUrl));
+      applyRouteIdAttribute(whereAmI(url));
     }
   };
 })();

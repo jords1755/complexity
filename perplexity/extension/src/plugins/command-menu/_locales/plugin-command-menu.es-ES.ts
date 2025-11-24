@@ -39,6 +39,8 @@ export default {
   },
   spaces: {
     footer: {
+      copyId: "Copiar ID",
+      copyIdSuccess: "✅ ID copiado al portapapeles",
       openInNewTab: "Abrir en nueva pestaña",
       searchInSpace: "Buscar en espacio",
       goToSpace: "Ir al espacio",
@@ -88,5 +90,6 @@ export default {
   common: {
     noResults: "No se encontraron resultados",
     current: "Actual",
+    expires: "Expira {date}",
   },
 } as const satisfies Translations;

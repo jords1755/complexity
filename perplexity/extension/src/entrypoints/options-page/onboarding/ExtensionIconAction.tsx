@@ -3,6 +3,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { Image } from "@/components/ui/image";
 import { H1 } from "@/components/ui/typography";
 import { EXTENSION_ICON_ACTIONS_LABEL as OPTIONS_LABEL } from "@/data/dashboard/extension-storage";
 import type { ExtensionSettings } from "@/services/infra/extension-api-wrappers/extension-settings/types";
@@ -20,13 +21,11 @@ export default function ExtensionIconAction() {
           </div>
         </HoverCardTrigger>
         <HoverCardContent>
-          <div className="x:max-w-[400px] x:rounded-xl x:border x:border-border/50">
-            <img
-              src="https://i.imgur.com/UF288wx.png"
-              alt="Dashboard Shortcut"
-              className="x:relative x:w-full x:rounded-xl x:shadow-lg"
-            />
-          </div>
+          <Image
+            src="https://i.imgur.com/UF288wx.png"
+            alt="Dashboard Shortcut"
+            className="x:w-full"
+          />
         </HoverCardContent>
       </HoverCard>
 
@@ -38,9 +37,7 @@ export default function ExtensionIconAction() {
 function ExtensionIconActionSelect() {
   const { settings, mutation } = useExtensionSettings();
 
-  if (!settings) return null;
-
-  const selectedValue = settings?.extensionIconAction;
+  const selectedValue = settings.extensionIconAction;
 
   const handleOptionClick = (
     option: ExtensionSettings["extensionIconAction"],
@@ -71,7 +68,7 @@ function ExtensionIconActionSelect() {
             <img
               src="https://images2.imgbox.com/06/5a/2uZrfS5v_o.png"
               alt="Settings Dashboard"
-              className="x:h-full x:w-full x:object-cover x:object-left-top x:shadow-lg"
+              className="x:h-full x:w-full x:object-cover x:object-top-left x:shadow-lg"
             />
           </div>
         </button>
@@ -99,7 +96,7 @@ function ExtensionIconActionSelect() {
             <img
               src="https://images2.imgbox.com/c3/04/ITzyjssA_o.png"
               alt="Perplexity.ai"
-              className="x:h-full x:w-full x:object-cover x:object-left-top x:shadow-lg"
+              className="x:h-full x:w-full x:object-cover x:object-top-left x:shadow-lg"
             />
           </div>
         </button>
@@ -118,13 +115,11 @@ function ExtensionIconActionSelect() {
               </p>
             </HoverCardTrigger>
             <HoverCardContent>
-              <div className="x:max-w-[400px] x:rounded-xl x:border x:border-border/50">
-                <img
-                  src="https://i.imgur.com/zgT1Wlz.png"
-                  alt="Dashboard Shortcut"
-                  className="x:relative x:w-full x:rounded-xl x:shadow-lg"
-                />
-              </div>
+              <Image
+                src="https://i.imgur.com/zgT1Wlz.png"
+                alt="How do I access the Settings Dashboard?"
+                className="x:max-w-[300px]"
+              />
             </HoverCardContent>
           </HoverCard>
         )}

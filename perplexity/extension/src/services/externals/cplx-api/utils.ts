@@ -1,17 +1,14 @@
-import type { ZodSchema } from "zod";
+import type z from "zod";
 
 import { APP_CONFIG } from "@/app.config";
 import { fetchTextResource } from "@/utils/misc/utils";
 
 export function getTParam({ interval = 0 }: { interval?: number } = {}) {
-  if (interval <= 0) return Date.now();
-
   const nowInMilliseconds = Date.now();
-  const cacheResetIntervalMs = 1000 * 60 * interval;
 
-  return (
-    Math.floor(nowInMilliseconds / cacheResetIntervalMs) * cacheResetIntervalMs
-  );
+  if (interval <= 0) return nowInMilliseconds;
+
+  return Math.floor(nowInMilliseconds / interval) * interval;
 }
 
 export async function fetchResourceWithSchema<T>({
@@ -20,7 +17,7 @@ export async function fetchResourceWithSchema<T>({
   pathPrefix,
 }: {
   resourcePath: string;
-  zodSchema: ZodSchema<T>;
+  zodSchema: z.ZodType<T>;
   pathPrefix: string;
 }): Promise<T> {
   const url = getUrl({

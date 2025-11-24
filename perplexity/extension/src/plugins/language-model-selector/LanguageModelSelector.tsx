@@ -7,7 +7,7 @@ import { DomSelectorsService } from "@/plugins/__core__/dom-selectors/service-in
 import {
   ScopedQueryBoxContext,
   useScopedQueryBoxContext,
-} from "@/plugins/__ui-groups__/elements/query-box/_context/context";
+} from "@/plugins/__ui-groups__/elements/query-box/context";
 import { getActiveQueryBoxTextbox } from "@/plugins/__ui-groups__/elements/query-box/utils";
 import CometAssistantLanguageModelSelectorTriggerButton from "@/plugins/language-model-selector/components/CometAssistantTriggerButton";
 import DesktopContent from "@/plugins/language-model-selector/components/desktop";
@@ -22,15 +22,13 @@ export function LanguageModelSelector() {
   const { isMobile } = useIsMobileStore();
   const { selectedLanguageModel, setSelectedLanguageModel } =
     useBetterLanguageModelSelectorStore((store) => ({
-      selectedLanguageModel: store.selectedLanguageModel,
-      setSelectedLanguageModel: store.setSelectedLanguageModel,
+      selectedLanguageModel: store.model,
+      setSelectedLanguageModel: store.setModel,
     }));
   const [highlightedItem, setHighlightedItem] = useState<LanguageModelCode>(
     selectedLanguageModel,
   );
   const [isOpen, setIsOpen] = useState(false);
-
-  const selectItems = useMemo(getSelectItems, []);
 
   useRegisterGlobalCss();
 
@@ -43,7 +41,7 @@ export function LanguageModelSelector() {
       unmountOnExit
       portal={false}
       collection={createListCollection({
-        items: selectItems,
+        items: getSelectItems(),
         itemToString: (item) => item.label,
         itemToValue: (item) => item.id,
       })}

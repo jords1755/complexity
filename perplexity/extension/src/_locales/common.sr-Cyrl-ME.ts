@@ -3,14 +3,21 @@ import type { Translations } from "@/_locales/index";
 export default {
   sidebar: {
     supporterMessage:
-      "Molimo vas da razmislite o tome da postanete <0>Podržavalac</0> kako biste održali projekat u životu!",
+      "Napravite donaciju kako biste održali projekat u životu!",
   },
   sponsorDialog: {
     title: "Pomozite da Complexity ostane sjajan!",
     description:
-      "Uložili smo bezbroj sati kako bismo Complexity učinili moćnim i doteranim alatom za vas. Vaša podrška direktno podstiče dalji razvoj, nove funkcije i održava sve da radi glatko.",
+      "Bezbroj sati je uloženo kako bi se Complexity učinio moćnim i doteranim alatom za vas. Vaša podrška direktno podstiče dalji razvoj, nove funkcije i održava sve da radi glatko.",
     descriptionLine2:
       "Ako Complexity dodaje vrednost vašem toku rada, razmislite o doprinosu njegovoj budućnosti!",
+    cometAffiliate: {
+      title: "Испробајте Comet - Добијте бесплатну <0/> претплату!",
+      description:
+        "Испробајте Comet - нов веб-прегледач од Перплексити - и добијте бесплатну <0/> претплату и истовремено директно допринесите развоју Complexity-а.",
+      claimButton: "Преузмите сада",
+      dismissButton: "Odbaci",
+    },
     donation: {
       title: "💖 Podržite budući razvoj",
     },

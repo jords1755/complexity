@@ -39,6 +39,8 @@ export default {
   },
   spaces: {
     footer: {
+      copyId: "IDをコピー",
+      copyIdSuccess: "✅ IDをクリップボードにコピーしました",
       openInNewTab: "新しいタブで開く",
       searchInSpace: "スペース内を検索",
       goToSpace: "スペースに移動",
@@ -88,5 +90,6 @@ export default {
   common: {
     noResults: "結果が見つかりません",
     current: "現在",
+    expires: "{date}に有効期限が切れます",
   },
 } as const satisfies Translations;

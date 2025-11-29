@@ -14,6 +14,7 @@ A plugin that allows users to export entire conversation threads with their full
 
 ```
 thread-export-to-llm/
+├── README.md                   # This documentation file
 ├── index.manifest.ts           # Plugin registration and settings schema
 ├── types.ts                    # TypeScript type definitions
 ├── utils.ts                    # Export formatting and utility functions

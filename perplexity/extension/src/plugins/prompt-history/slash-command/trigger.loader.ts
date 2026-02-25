@@ -1,4 +1,5 @@
 import { slashCommandMenuStore } from "@/entrypoints/contexts/content-scripts/core-plugins/slash-command/store";
+import { registerPageCommand } from "@/entrypoints/contexts/content-scripts/core-plugins/slash-command/store/slices/pages/utils";
 import { getAnchor } from "@/entrypoints/contexts/content-scripts/core-plugins/slash-command/utils";
 import { AsyncLoaderRegistry } from "@/entrypoints/contexts/content-scripts/services/async-loaders";
 import { PluginsSettingSnapshotsService } from "@/entrypoints/services/plugins/settings/snapshots";
@@ -16,8 +17,8 @@ const pageId = "promptHistory" as const;
 export default function () {
   AsyncLoaderRegistry.register({
     id: "plugin:queryBox:promptHistory:shortcut-init",
-    dependencies: ["cache:pluginsEnableStatesV2"],
-    loader: ({ "cache:pluginsEnableStatesV2": pluginsEnableStates }) => {
+    dependencies: ["cache:pluginsEnableStates"],
+    loader: ({ "cache:pluginsEnableStates": pluginsEnableStates }) => {
       if (!pluginsEnableStates["promptHistory"]) return;
 
       const shortcut =
@@ -60,8 +61,7 @@ export default function () {
           });
         });
       } else {
-        // TODO: implement registration for command
-        // src\plugins\slash-command\store\slices\pages\utils.ts
+        registerPageCommand(shortcut.value, pageId);
       }
     },
   });

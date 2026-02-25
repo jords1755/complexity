@@ -14,11 +14,10 @@ export default function () {
     id: "corePlugin:domObservers:thread:codeBlocks",
     dependencies: [
       "corePlugin:domObservers:thread:messageBlocks",
-      "cache:pluginsEnableStatesV2",
+      "cache:pluginsEnableStates",
     ],
-    loader: ({ "cache:pluginsEnableStatesV2": pluginsEnableStates }) => {
+    loader: ({ "cache:pluginsEnableStates": pluginsEnableStates }) => {
       if (!pluginsEnableStates["domObservers:thread:codeBlocks"]) return;
-
       observeThreadCodeBlocks();
     },
   });
